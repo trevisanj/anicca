@@ -115,7 +115,7 @@ body::before{
   </div>
   <div id="tree-actions" class="tree-actions">
     <div class="tree-levels" role="group" aria-label="Expand index levels">
-      <button type="button" class="tree-level-button" data-tree-level="0" aria-pressed="true">0</button>
+      <button type="button" class="tree-level-button" data-tree-level="0" aria-pressed="false">0</button>
       <button type="button" class="tree-level-button" data-tree-level="1" aria-pressed="false">1</button>
       <button type="button" class="tree-level-button" data-tree-level="2" aria-pressed="false">2</button>
       <button type="button" class="tree-level-button" data-tree-level="3" aria-pressed="false">3</button>
@@ -135,12 +135,12 @@ body::before{
 </tr>
 </thead>
 <tbody></tbody>
-<tfoot><tr><td colspan="4">Generated on 2026-10-12 15:16</td></tr></tfoot>
+<tfoot><tr><td colspan="4">Generated on 2026-10-12 17:14</td></tr></tfoot>
 </table>
 
 <script>
 // Raw JS braces are safe now because this is NOT a Python f-string.
-const DATA = [{"path": "dynamic/agrofloresta/agrofloresta0.html", "relpath": "dynamic/agrofloresta/agrofloresta0.html", "title": "Agrofloresta", "meta_description": null, "og_title": null, "headings": ["Agrofloresta", "Livros começados/terminados", "████ - ███████", "20260625", "20260626", "20260627"], "first_paragraph": "Converted from agrofloresta0.md in 2026-10-12 15:16:10", "top_keywords": ["não", "agrofloresta", "saf", "dia", "plantas", "mutirão", "irrigação", "água", "mesmo", "fazer", "depois", "vezes"], "word_count": 5896, "size_bytes": 6083043, "mtime": 1791832570, "about": "Agrofloresta — Livros começados/terminados · [não, agrofloresta, saf, dia]"}];
+const DATA = [{"path": "dynamic/agrofloresta/agrofloresta0.html", "relpath": "dynamic/agrofloresta/agrofloresta0.html", "title": "Agrofloresta", "meta_description": null, "og_title": null, "headings": ["Agrofloresta", "Livros começados/terminados", "████ - ███████", "20260625", "20260626", "20260627"], "first_paragraph": "Converted from agrofloresta0.md in 2026-10-12 17:14:15", "top_keywords": ["não", "agrofloresta", "saf", "dia", "plantas", "mutirão", "irrigação", "água", "mesmo", "fazer", "depois", "vezes"], "word_count": 5896, "size_bytes": 6084789, "mtime": 1791839655, "about": "Agrofloresta — Livros começados/terminados · [não, agrofloresta, saf, dia]"}];
 const VIEW_STORAGE_KEY = 'autoblog-index-view-v1';
 const EXPANDED_STORAGE_KEY = 'autoblog-index-expanded-v1';
 const collator = new Intl.Collator(undefined, {numeric:true, sensitivity:'base'});
@@ -242,24 +242,24 @@ function storedValue(key){
 function storeValue(key, value){
   try{window.localStorage.setItem(key, value)}catch(e){}
 }
-function loadExpandedPaths(){
+function loadExpandedPaths(defaultPaths){
   const raw = storedValue(EXPANDED_STORAGE_KEY);
-  if(!raw) return new Set();
+  if(raw === null) return new Set(defaultPaths);
   try{
     const paths = JSON.parse(raw);
     return new Set(Array.isArray(paths) ? paths : []);
-  }catch(e){return new Set()}
+  }catch(e){return new Set(defaultPaths)}
 }
 
 const TREE = buildTree(DATA);
 const ALL_FOLDER_PATHS = gatherFolderPaths(TREE);
 const FOLDER_DEPTHS = gatherFolderDepths(TREE);
-const expandedPaths = loadExpandedPaths();
+const expandedPaths = loadExpandedPaths(ALL_FOLDER_PATHS);
 const searchCollapsedPaths = new Set();
 let sortKey = 'word_count';
 let sortDir = -1;
 let viewMode = storedValue(VIEW_STORAGE_KEY) === 'flat' ? 'flat' : 'tree';
-let selectedTreeLevel = expandedPaths.size ? null : 0;
+let selectedTreeLevel = null;
 
 function folderRowHTML(node, depth, matchingFiles, expanded){
   return `<tr class="folder-row">
