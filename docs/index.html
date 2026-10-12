@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Index — Public site</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --bg:#001b00;          /* deep phosphor black-green */
+  --panel:#001400;       /* slightly lighter panel */
+  --text:#b6fcb6;        /* primary green */
+  --sub:#7adf7a;         /* secondary */
+  --muted:#5aa75a;       /* muted */
+  --border:#0d3b0d;      /* gridlines */
+  --accent:#33ff66;      /* links, highlights */
+  --hover:#0a2e0a;       /* row hover */
+}
+
+html,body{background:var(--bg); color:var(--text);}
+body{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
+  margin:24px; line-height:1.4;
+  text-shadow:0 0 3px rgba(51,255,102,0.25); /* subtle CRT glow */
+}
+
+h1{margin:0 0 8px 0; color:var(--text);}
+small{color:var(--muted);}
+
+.index-controls{
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+  gap:8px; margin-top:16px;
+}
+.view-switch,.tree-actions,.tree-levels{display:flex; gap:6px;}
+.tree-actions{flex-wrap:wrap;}
+.view-button,.tree-action,.tree-level-button{
+  min-height:34px; padding:5px 10px; color:var(--sub); background:var(--panel);
+  border:1px solid var(--border); border-radius:3px; cursor:pointer; font:inherit;
+}
+.tree-level-button{min-width:34px; padding:5px 8px;}
+.view-button:hover,.tree-action:hover,.tree-level-button:hover{color:var(--accent); border-color:var(--muted);}
+.view-button[aria-pressed="true"],.tree-level-button[aria-pressed="true"]{
+  color:var(--bg); background:var(--accent); border-color:var(--accent); text-shadow:none;
+}
+[hidden]{display:none !important;}
+
+#q{
+  width:100%; padding:10px 12px; font-size:15px; margin:10px 0 16px; box-sizing:border-box;
+  color:var(--text); background:var(--panel); border:1px solid var(--border); border-radius:4px;
+  outline:none;
+  box-shadow:0 0 0 1px rgba(51,255,102,0.05) inset;
+}
+#q::placeholder{color:var(--muted);}
+
+table{width:100%; border-collapse:collapse; background:transparent; font-size:14px;}
+th,td{padding:10px; border-bottom:1px solid var(--border); vertical-align:top;}
+th{
+  text-align:left; user-select:none; white-space:nowrap;
+  color:var(--sub); background:var(--bg); letter-spacing:0.02em;
+}
+table[data-view="flat"] th[data-k]{cursor:pointer;}
+th[data-k]::after{
+  content:attr(data-sort-marker);
+  display:inline-block;
+  min-width:1.2em;
+  margin-left:6px;
+  color:var(--accent);
+}
+.sticky{position:sticky; top:0; background:var(--bg); box-shadow:0 2px 0 0 var(--border);}
+
+.row-title a{ text-decoration:none; color:var(--accent); }
+.row-title a:hover{ text-decoration:underline; }
+.tree-entry{
+  display:flex; min-width:0; align-items:flex-start; gap:7px;
+  margin-left:calc(var(--tree-depth, 0) * 20px);
+}
+.tree-toggle{
+  width:calc(100% - var(--tree-depth, 0) * 20px); padding:0; border:0;
+  color:var(--text); background:transparent; cursor:pointer; font:inherit; text-align:left;
+}
+.tree-toggle:hover{color:var(--accent);}
+.tree-chevron{flex:0 0 1em; color:var(--sub);}
+.tree-leaf{flex:0 0 1em; color:var(--muted); text-align:center;}
+.folder-name{font-weight:700; overflow-wrap:anywhere;}
+.folder-count{color:var(--muted); white-space:nowrap;}
+.folder-row{background:rgba(10,46,10,0.24);}
+.folder-row td{border-bottom-color:var(--muted);}
+.folder-row .folder-path{font-size:.86em;}
+
+.meta{color:var(--sub);}
+.dim{color:var(--muted);}
+.num{text-align:right;}
+#count{margin-left:8px; color:var(--sub);}
+tfoot td{padding-top:12px; color:var(--muted);}
+
+tr:hover{background:var(--hover);}
+
+/* Optional: faint horizontal “scanlines”. Comment out if you don’t like it. */
+body::before{
+  content:""; pointer-events:none; position:fixed; inset:0;
+  background:linear-gradient(rgba(255,255,255,0.02), rgba(0,0,0,0.02));
+  background-size:100% 2px; mix-blend-mode:overlay; opacity:0.35;
+}
+
+/* Optional: caret-style focus ring for keyboard nav */
+:focus-visible{ outline:1px dashed var(--accent); outline-offset:2px; }
+</style>
+</head>
+<body>
+<h1>Index</h1>
+<div class="meta">Public site <small id="count"></small></div>
+<div class="index-controls">
+  <div class="view-switch" role="group" aria-label="Index view">
+    <button type="button" class="view-button" data-view-mode="tree" aria-pressed="true">Tree</button>
+    <button type="button" class="view-button" data-view-mode="flat" aria-pressed="false">Flat</button>
+  </div>
+  <div id="tree-actions" class="tree-actions">
+    <div class="tree-levels" role="group" aria-label="Expand index levels">
+      <button type="button" class="tree-level-button" data-tree-level="0" aria-pressed="true">0</button>
+      <button type="button" class="tree-level-button" data-tree-level="1" aria-pressed="false">1</button>
+      <button type="button" class="tree-level-button" data-tree-level="2" aria-pressed="false">2</button>
+      <button type="button" class="tree-level-button" data-tree-level="3" aria-pressed="false">3</button>
+    </div>
+    <button type="button" class="tree-action" data-tree-action="expand">Expand all</button>
+    <button type="button" class="tree-action" data-tree-action="collapse">Collapse all</button>
+  </div>
+</div>
+<input id="q" type="search" placeholder="Search title, path, headings, description, keywords…" autofocus>
+<table id="tbl" data-view="tree">
+<thead class="sticky">
+<tr>
+  <th data-k="title">Title</th>
+  <th data-k="relpath">Path</th>
+  <th data-k="mtime">Modified</th>
+  <th class="num" data-k="word_count">Words</th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot><tr><td colspan="4">Generated on 2026-10-12 15:16</td></tr></tfoot>
+</table>
+
+<script>
+// Raw JS braces are safe now because this is NOT a Python f-string.
+const DATA = [{"path": "dynamic/agrofloresta/agrofloresta0.html", "relpath": "dynamic/agrofloresta/agrofloresta0.html", "title": "Agrofloresta", "meta_description": null, "og_title": null, "headings": ["Agrofloresta", "Livros começados/terminados", "████ - ███████", "20260625", "20260626", "20260627"], "first_paragraph": "Converted from agrofloresta0.md in 2026-10-12 15:16:10", "top_keywords": ["não", "agrofloresta", "saf", "dia", "plantas", "mutirão", "irrigação", "água", "mesmo", "fazer", "depois", "vezes"], "word_count": 5896, "size_bytes": 6083043, "mtime": 1791832570, "about": "Agrofloresta — Livros começados/terminados · [não, agrofloresta, saf, dia]"}];
+const VIEW_STORAGE_KEY = 'autoblog-index-view-v1';
+const EXPANDED_STORAGE_KEY = 'autoblog-index-expanded-v1';
+const collator = new Intl.Collator(undefined, {numeric:true, sensitivity:'base'});
+const table = document.getElementById('tbl');
+const tbody = table.querySelector('tbody');
+const q = document.getElementById('q');
+const count = document.getElementById('count');
+const treeActions = document.getElementById('tree-actions');
+
+function fmtDate(ts){try{return new Date(ts*1000).toISOString().slice(0,16).replace('T',' ')}catch(e){return ''}}
+function esc(value){
+  const chars = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+  return String(value ?? '').replace(/[&<>"']/g, char => chars[char]);
+}
+function normalizedRelpath(row){
+  return String(row.relpath || row.path || '').replace(/\\/g, '/');
+}
+function pageLink(row){
+  return `<a href="${esc(encodeURI(normalizedRelpath(row)))}" target="_blank" rel="noopener">${esc(row.title||'—')}</a>`;
+}
+
+function pageRowHTML(row, depth=null){
+  const title = depth === null
+    ? pageLink(row)
+    : `<div class="tree-entry" style="--tree-depth:${depth}"><span class="tree-leaf" aria-hidden="true">·</span>${pageLink(row)}</div>`;
+  return `<tr>
+    <td class="row-title">${title}</td>
+    <td class="dim">${esc(row.relpath||row.path)}</td>
+    <td>${fmtDate(row.mtime)}</td>
+    <td class="num">${row.word_count||0}</td>
+  </tr>`;
+}
+
+function newFolder(name, path){
+  return {name, path, folderMap:new Map(), folders:[], files:[], totalFiles:0};
+}
+
+function finalizeFolder(node){
+  node.folders = Array.from(node.folderMap.values());
+  delete node.folderMap;
+  node.folders.forEach(finalizeFolder);
+  node.totalFiles = node.files.length + node.folders.reduce((sum, child) => sum + child.totalFiles, 0);
+}
+
+function collectFiles(node){
+  return node.files.concat(...node.folders.map(collectFiles));
+}
+
+function compactFolder(node, preserveChildFolders=false){
+  node.folders.forEach(child => compactFolder(child));
+  const keptFolders = [];
+  node.folders.forEach(child => {
+    if(preserveChildFolders || child.totalFiles > 1){
+      keptFolders.push(child);
+    }else{
+      node.files.push(...collectFiles(child));
+    }
+  });
+  node.folders = keptFolders;
+  node.totalFiles = node.files.length + node.folders.reduce((sum, child) => sum + child.totalFiles, 0);
+}
+
+function buildTree(rows){
+  const root = newFolder('', '');
+  rows.forEach(row => {
+    const parts = normalizedRelpath(row).split('/').filter(Boolean);
+    let folder = root;
+    parts.slice(0, -1).forEach(part => {
+      const path = folder.path ? `${folder.path}/${part}` : part;
+      if(!folder.folderMap.has(part)) folder.folderMap.set(part, newFolder(part, path));
+      folder = folder.folderMap.get(part);
+    });
+    folder.files.push(row);
+  });
+  finalizeFolder(root);
+  compactFolder(root, true);
+  return root;
+}
+
+function gatherFolderPaths(node, paths=[]){
+  node.folders.forEach(folder => {
+    paths.push(folder.path);
+    gatherFolderPaths(folder, paths);
+  });
+  return paths;
+}
+
+function gatherFolderDepths(node, depth=0, depths=new Map()){
+  node.folders.forEach(folder => {
+    depths.set(folder.path, depth);
+    gatherFolderDepths(folder, depth + 1, depths);
+  });
+  return depths;
+}
+
+function storedValue(key){
+  try{return window.localStorage.getItem(key)}catch(e){return null}
+}
+function storeValue(key, value){
+  try{window.localStorage.setItem(key, value)}catch(e){}
+}
+function loadExpandedPaths(){
+  const raw = storedValue(EXPANDED_STORAGE_KEY);
+  if(!raw) return new Set();
+  try{
+    const paths = JSON.parse(raw);
+    return new Set(Array.isArray(paths) ? paths : []);
+  }catch(e){return new Set()}
+}
+
+const TREE = buildTree(DATA);
+const ALL_FOLDER_PATHS = gatherFolderPaths(TREE);
+const FOLDER_DEPTHS = gatherFolderDepths(TREE);
+const expandedPaths = loadExpandedPaths();
+const searchCollapsedPaths = new Set();
+let sortKey = 'word_count';
+let sortDir = -1;
+let viewMode = storedValue(VIEW_STORAGE_KEY) === 'flat' ? 'flat' : 'tree';
+let selectedTreeLevel = expandedPaths.size ? null : 0;
+
+function folderRowHTML(node, depth, matchingFiles, expanded){
+  return `<tr class="folder-row">
+    <td class="row-title">
+      <button type="button" class="tree-entry tree-toggle" style="--tree-depth:${depth}" data-tree-path="${esc(node.path)}" aria-expanded="${expanded}">
+        <span class="tree-chevron" aria-hidden="true">${expanded ? '▾' : '▸'}</span>
+        <span class="folder-name">${esc(node.name)}</span>
+        <span class="folder-count">(${matchingFiles})</span>
+      </button>
+    </td>
+    <td class="dim folder-path">${esc(node.path)}/</td><td></td><td></td>
+  </tr>`;
+}
+
+function match(row, query){
+  query = query.trim().toLowerCase();
+  if(!query) return true;
+  const hay = [
+    row.title, row.relpath, row.path, row.meta_description, row.og_title, row.first_paragraph, row.about,
+    ...(row.headings||[]), ...(row.top_keywords||[])
+  ].filter(Boolean).join(' ').toLowerCase();
+  return query.split(/\s+/).every(token => hay.includes(token));
+}
+
+function treeTitle(row){return String(row.title || row.relpath || row.path || '')}
+function treeFolders(folders){return folders.slice().sort((a,b) => collator.compare(a.name, b.name))}
+function treeFiles(files){return files.slice().sort((a,b) => collator.compare(treeTitle(a), treeTitle(b)))}
+
+function renderTree(filtered, searching){
+  const matches = new Set(filtered);
+  const matchingCounts = new Map();
+  function countMatches(node){
+    const total = node.files.filter(row => matches.has(row)).length
+      + node.folders.reduce((sum, child) => sum + countMatches(child), 0);
+    matchingCounts.set(node, total);
+    return total;
+  }
+  countMatches(TREE);
+
+  const rows = [];
+  function appendFolder(node, depth){
+    const matchingFiles = matchingCounts.get(node) || 0;
+    if(!matchingFiles) return;
+    const expanded = searching
+      ? !searchCollapsedPaths.has(node.path)
+      : expandedPaths.has(node.path);
+    rows.push(folderRowHTML(node, depth, matchingFiles, expanded));
+    if(!expanded) return;
+    treeFolders(node.folders).forEach(child => appendFolder(child, depth + 1));
+    treeFiles(node.files.filter(row => matches.has(row))).forEach(row => {
+      rows.push(pageRowHTML(row, depth + 1));
+    });
+  }
+
+  treeFolders(TREE.folders).forEach(folder => appendFolder(folder, 0));
+  treeFiles(TREE.files.filter(row => matches.has(row))).forEach(row => {
+    rows.push(pageRowHTML(row, 0));
+  });
+  tbody.innerHTML = rows.join('');
+}
+
+function renderFlat(filtered){
+  tbody.innerHTML = sortData(filtered).map(row => pageRowHTML(row)).join('');
+}
+
+function sortData(arr){
+  if(!sortKey || !sortDir) return arr.slice();
+  return arr.slice().sort((a,b) => {
+    if(sortKey === 'mtime' || sortKey === 'word_count'){
+      const na = Number(a[sortKey] ?? 0);
+      const nb = Number(b[sortKey] ?? 0);
+      if(na<nb) return -1*sortDir;
+      if(na>nb) return 1*sortDir;
+      return 0;
+    }
+    const va = (a[sortKey] ?? '').toString().toLowerCase();
+    const vb = (b[sortKey] ?? '').toString().toLowerCase();
+    if(va<vb) return -1*sortDir;
+    if(va>vb) return 1*sortDir;
+    return 0;
+  });
+}
+
+function updateSortMarkers(){
+  document.querySelectorAll('th[data-k]').forEach(th => {
+    const k = th.getAttribute('data-k');
+    const sorting = viewMode === 'flat' && k === sortKey && sortDir;
+    th.setAttribute('data-sort-marker', sorting ? (sortDir > 0 ? '▲' : '▼') : '');
+    th.setAttribute('aria-disabled', viewMode === 'tree' ? 'true' : 'false');
+    th.title = viewMode === 'tree' ? 'Switch to Flat view to sort' : '';
+    if(sorting){
+      th.setAttribute('aria-sort', sortDir > 0 ? 'ascending' : 'descending');
+    }else{
+      th.removeAttribute('aria-sort');
+    }
+  });
+}
+
+function updateTreeLevelControls(){
+  document.querySelectorAll('[data-tree-level]').forEach(button => {
+    button.setAttribute(
+      'aria-pressed',
+      Number(button.dataset.treeLevel) === selectedTreeLevel ? 'true' : 'false'
+    );
+  });
+}
+
+function setTreeExpansionLevel(level){
+  selectedTreeLevel = level;
+  if(q.value.trim()){
+    searchCollapsedPaths.clear();
+    FOLDER_DEPTHS.forEach((depth, path) => {
+      if(depth >= level) searchCollapsedPaths.add(path);
+    });
+  }else{
+    expandedPaths.clear();
+    FOLDER_DEPTHS.forEach((depth, path) => {
+      if(depth < level) expandedPaths.add(path);
+    });
+    storeValue(EXPANDED_STORAGE_KEY, JSON.stringify(Array.from(expandedPaths)));
+  }
+  updateTreeLevelControls();
+  refresh();
+}
+
+function updateViewControls(){
+  table.setAttribute('data-view', viewMode);
+  treeActions.hidden = viewMode !== 'tree';
+  document.querySelectorAll('[data-view-mode]').forEach(button => {
+    button.setAttribute('aria-pressed', button.dataset.viewMode === viewMode ? 'true' : 'false');
+  });
+  updateSortMarkers();
+  updateTreeLevelControls();
+}
+
+function updateCount(matchingFiles){
+  const noun = DATA.length === 1 ? 'file' : 'files';
+  count.textContent = matchingFiles === DATA.length
+    ? `— ${DATA.length} ${noun}`
+    : `— ${matchingFiles} of ${DATA.length} ${noun}`;
+}
+
+function refresh(){
+  const query = q.value.trim();
+  const filtered = DATA.filter(row => match(row, query));
+  if(viewMode === 'tree'){
+    renderTree(filtered, Boolean(query));
+  }else{
+    renderFlat(filtered);
+  }
+  updateCount(filtered.length);
+}
+
+q.addEventListener('input', () => {
+  searchCollapsedPaths.clear();
+  if(selectedTreeLevel !== null){
+    FOLDER_DEPTHS.forEach((depth, path) => {
+      if(depth >= selectedTreeLevel) searchCollapsedPaths.add(path);
+    });
+  }
+  refresh();
+});
+
+tbody.addEventListener('click', event => {
+  const button = event.target.closest('[data-tree-path]');
+  if(!button) return;
+  const path = button.dataset.treePath;
+  const searching = Boolean(q.value.trim());
+  if(searching){
+    if(button.getAttribute('aria-expanded') === 'true') searchCollapsedPaths.add(path);
+    else searchCollapsedPaths.delete(path);
+  }else{
+    if(expandedPaths.has(path)) expandedPaths.delete(path);
+    else expandedPaths.add(path);
+    storeValue(EXPANDED_STORAGE_KEY, JSON.stringify(Array.from(expandedPaths)));
+  }
+  selectedTreeLevel = null;
+  updateTreeLevelControls();
+  refresh();
+});
+
+document.querySelectorAll('[data-tree-level]').forEach(button => {
+  button.addEventListener('click', () => {
+    setTreeExpansionLevel(Number(button.dataset.treeLevel));
+  });
+});
+
+document.querySelectorAll('[data-view-mode]').forEach(button => {
+  button.addEventListener('click', () => {
+    viewMode = button.dataset.viewMode;
+    storeValue(VIEW_STORAGE_KEY, viewMode);
+    updateViewControls();
+    refresh();
+  });
+});
+
+document.querySelectorAll('[data-tree-action]').forEach(button => {
+  button.addEventListener('click', () => {
+    const expand = button.dataset.treeAction === 'expand';
+    selectedTreeLevel = expand ? null : 0;
+    if(q.value.trim()){
+      searchCollapsedPaths.clear();
+      if(!expand) ALL_FOLDER_PATHS.forEach(path => searchCollapsedPaths.add(path));
+    }else{
+      expandedPaths.clear();
+      if(expand) ALL_FOLDER_PATHS.forEach(path => expandedPaths.add(path));
+      storeValue(EXPANDED_STORAGE_KEY, JSON.stringify(Array.from(expandedPaths)));
+    }
+    updateTreeLevelControls();
+    refresh();
+  });
+});
+
+document.querySelectorAll('th[data-k]').forEach(th => {
+  th.addEventListener('click', () => {
+    if(viewMode !== 'flat') return;
+    const k = th.getAttribute('data-k');
+    if(k !== sortKey){
+      sortKey = k;
+      sortDir = 1;
+    } else if(sortDir === 1){
+      sortDir = -1;
+    } else {
+      sortKey = null;
+      sortDir = 0;
+    }
+    updateSortMarkers();
+    refresh();
+  });
+});
+
+updateViewControls();
+refresh();
+</script>
+</body>
+</html>
