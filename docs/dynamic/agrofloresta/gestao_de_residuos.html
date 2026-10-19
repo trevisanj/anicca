@@ -1,0 +1,2468 @@
+<!doctype html>
+<html lang="en" data-theme="dark"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,viewport-fit=cover">
+<title>Gestão de resíduos</title>
+<link rel="icon" type="image/png" href="gestao_de_residuos.favicon.png">
+<script>
+(function () {
+  const root = document.documentElement;
+  const preferences = [{"name": "theme", "storageKey": "autoblog.reader.theme.v1", "states": [{"value": "dark", "label": "Switch to dark mode", "icon": "☾"}, {"value": "light", "label": "Switch to light mode", "icon": "☀"}]}, {"name": "image-layout", "storageKey": "autoblog.reader.image-layout.v2", "states": [{"value": "thumbnails", "label": "Use image thumbnails", "icon": "Thumbnails"}, {"value": "two-thirds", "label": "Use images at 67% width", "icon": "67%"}, {"value": "figures", "label": "Use images at 100% width", "icon": "100%"}]}];
+  preferences.forEach(function (preference) {
+    const attribute = 'data-' + preference.name;
+    let current = preference.states[0];
+    try {
+      const saved = localStorage.getItem(preference.storageKey);
+      current = preference.states.find(state => state.value === saved) || current;
+    } catch (error) {
+      // Defaults and controls remain usable when storage is unavailable.
+    }
+    root.setAttribute(attribute, current.value);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const buttons = Array.from(document.querySelectorAll('[data-reader-group="' + preference.name + '"]'));
+      if (!buttons.length) return;
+      function updateControls() {
+        buttons.forEach(function (button) {
+          const selected = button.dataset.readerValue === current.value;
+          button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        });
+      }
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          current = preference.states.find(state => state.value === button.dataset.readerValue);
+          root.setAttribute(attribute, current.value);
+          updateControls();
+          try {
+            localStorage.setItem(preference.storageKey, current.value);
+          } catch (error) {
+            // Switching still works without persistent storage.
+          }
+        });
+      });
+      updateControls();
+    });
+  });
+})();
+</script>
+<style>
+:root {
+  color-scheme:dark;
+  --bg:#0b0f14;
+  --fg:#c9d1d9;
+  --censor-image-bg:#ffffff;
+  --muted:#8892a0;
+  --link:#58a6ff;
+  --accent:#7ee787;
+  --code-bg:#0f1520;
+  --code-block-bg:#151e2b;
+  --border:#223044;
+  --thought-border:#f4d03f;
+  --llm-background:linear-gradient(120deg, transparent 0 18%, rgba(255,255,255,.10) 27%, transparent 39% 61%, rgba(255,255,255,.07) 72%, transparent 84%), linear-gradient(135deg, #343b44 0%, #272d34 24%, #46505b 49%, #2d343c 72%, #3a434d 100%);
+  --terminal-comment:#39ff14;
+  --article-tag-bg:rgba(244,208,63,.2);
+  --article-tag-fg:#ffe169;
+  --highlight-bg:#f4d03f;
+  --highlight-fg:#171409;
+  --bigquestion-bg:#123d24;
+  --bigquestion-fg:#f0f6ee;
+  --bigquestion-link:#dfcaff;
+  --anguish-shade:rgba(11,15,20,.38);
+  --anguish-mixed-fg:#f3ece7;
+  --anguish-mixed-initial:#f2ccdd;
+  --anguish-mixed-link:#ffd8e7;
+  --anguish-background-neutral:#30363d;
+  --anguish-foreground-neutral:#ece7de;
+  --anguish-initial-neutral:#d7c5a5;
+  --anguish-link-neutral:#b9d7ff;
+  --anguish-background-happy:#d9b94e;
+  --anguish-foreground-happy:#211c0d;
+  --anguish-initial-happy:#714500;
+  --anguish-link-happy:#493100;
+  --anguish-background-sad:#263a52;
+  --anguish-foreground-sad:#ece7de;
+  --anguish-initial-sad:#b4d2f0;
+  --anguish-link-sad:#c7e1ff;
+  --anguish-background-annoyed:#a84f16;
+  --anguish-foreground-annoyed:#fff3e6;
+  --anguish-initial-annoyed:#ffd0a3;
+  --anguish-link-annoyed:#ffe0bd;
+  --anguish-background-disgusted:#a6b523;
+  --anguish-foreground-disgusted:#401c30;
+  --anguish-initial-disgusted:#3d1028;
+  --anguish-link-disgusted:#512035;
+  --anguish-background-angry:#651f33;
+  --anguish-foreground-angry:#ece7de;
+  --anguish-initial-angry:#ffbdc3;
+  --anguish-link-angry:#ffd0d4;
+}
+:root[data-theme="light"] {
+  color-scheme:light;
+  --bg:#ffffff;
+  --fg:#1b1f23;
+  --censor-image-bg:#000000;
+  --muted:#586069;
+  --link:#174ea6;
+  --accent:#176b3a;
+  --code-bg:#f5f7f9;
+  --code-block-bg:#eef1f4;
+  --border:#c8d0d8;
+  --thought-border:#a77b00;
+  --llm-background:#eef0f2;
+  --terminal-comment:#176b3a;
+  --article-tag-bg:rgba(167,123,0,.16);
+  --article-tag-fg:#664b00;
+  --highlight-bg:#f4d03f;
+  --highlight-fg:#171409;
+  --bigquestion-bg:#dceede;
+  --bigquestion-fg:#203126;
+  --bigquestion-link:#4b2765;
+  --anguish-shade:rgba(255,255,255,.22);
+  --anguish-mixed-fg:#202428;
+  --anguish-mixed-initial:#573a18;
+  --anguish-mixed-link:#174ea6;
+  --anguish-background-neutral:#eef0f2;
+  --anguish-foreground-neutral:#202428;
+  --anguish-initial-neutral:#573a18;
+  --anguish-link-neutral:#174ea6;
+  --anguish-background-happy:#fff2b8;
+  --anguish-foreground-happy:#202428;
+  --anguish-initial-happy:#573a18;
+  --anguish-link-happy:#174ea6;
+  --anguish-background-sad:#dceaf7;
+  --anguish-foreground-sad:#202428;
+  --anguish-initial-sad:#573a18;
+  --anguish-link-sad:#174ea6;
+  --anguish-background-annoyed:#f8dfc8;
+  --anguish-foreground-annoyed:#202428;
+  --anguish-initial-annoyed:#573a18;
+  --anguish-link-annoyed:#174ea6;
+  --anguish-background-disgusted:#edf2bd;
+  --anguish-foreground-disgusted:#202428;
+  --anguish-initial-disgusted:#573a18;
+  --anguish-link-disgusted:#174ea6;
+  --anguish-background-angry:#f7dce2;
+  --anguish-foreground-angry:#202428;
+  --anguish-initial-angry:#573a18;
+  --anguish-link-angry:#174ea6;
+}
+:root { --heading-menu-width:300px; }
+* { box-sizing:border-box; }
+html,body { margin:0; padding:0; background:var(--bg); color:var(--fg); }
+body {
+  font:18px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+}
+body.has-heading-menu {
+  display:grid; grid-template-columns:var(--heading-menu-width) minmax(0, 1fr);
+}
+body.has-heading-menu.heading-menu-collapsed { grid-template-columns:0 minmax(0, 1fr); }
+main { max-width:1720px; margin:40px auto; padding:0 64px 0 16px; overflow-wrap:anywhere; }
+body.has-heading-menu > main { grid-column:2; grid-row:1; width:100%; }
+body.has-heading-menu.heading-menu-collapsed > main { margin-top:64px; }
+h1,h2,h3,h4,h5,h6 {
+  color:var(--fg); margin:1.6em 0 .6em; letter-spacing:.3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+h1,h2,h3 { scroll-margin-top:16px; }
+.article-header {
+  display:flex; align-items:center; gap:1.25rem; margin:1.6em 0 .6em;
+  break-inside:avoid; break-after:avoid;
+}
+.article-header > h1 { margin:0; min-width:0; flex:1; }
+.article-header__logo {
+  display:block; flex:0 1 auto; width:auto; height:auto; border:0;
+  max-width:min(240px, 35%); max-height:120px; object-fit:contain;
+}
+a { color:var(--link); text-decoration:none; }
+a:hover { text-decoration:underline; }
+p,li { color:var(--fg); }
+.word-cloud {
+  margin:1.25rem 0; padding:1rem 0;
+  cursor:pointer;
+}
+.word-cloud:hover { background:color-mix(in srgb, var(--code-bg) 45%, transparent); }
+.word-cloud:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.word-cloud__label { color:var(--muted); font-size:.8rem; margin-bottom:.6rem; }
+.word-cloud__words { display:flex; flex-wrap:wrap; align-items:baseline; gap:.35rem 1rem; }
+.word-cloud__word { color:var(--fg); line-height:1.35; max-width:100%; overflow-wrap:anywhere; }
+.word-cloud__count { color:var(--muted); font-size:.65em; white-space:nowrap; }
+.word-cloud-details { --dialog-width:64rem; }
+.word-cloud-details__summary { color:var(--muted); font-size:.85rem; }
+.word-cloud-details__table { width:100%; border:0; border-collapse:collapse; table-layout:fixed; }
+.word-cloud-details__table td:first-child { overflow-wrap:anywhere; }
+.word-cloud-details__table :is(th, td) {
+  padding:.45rem .35rem; border:0; text-align:left; vertical-align:middle;
+}
+.word-cloud-details__table th:nth-child(2),
+.word-cloud-details__table td:nth-child(2) {
+  width:7ch; text-align:right; white-space:nowrap; word-break:normal; overflow-wrap:normal;
+  font-variant-numeric:tabular-nums;
+}
+.word-cloud-details__table th:nth-child(3),
+.word-cloud-details__table td:nth-child(3) { width:30%; }
+.word-cloud-details__bar-track {
+  display:block; width:100%; height:.65rem;
+  background:color-mix(in srgb, var(--muted) 18%, transparent);
+}
+.word-cloud-details__bar { display:block; height:100%; background:var(--accent); }
+big { font-size:1.2em; }
+.markdown-body ul > li::marker {
+  content:"▓ ";
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size:0.7em;
+  /* Marker-local ch units shrink with font-size; compensate to retain the configured gap. */
+  letter-spacing:0.714286ch;
+}
+.markdown-body ul ul > li::marker { content:"▒ "; }
+.markdown-body ul ul ul > li::marker { content:"░ "; }
+.censor-blocks {
+  --censor-block-overlap:1px;
+  font:inherit;
+  letter-spacing:calc(-1 * var(--censor-block-overlap));
+  /* Restore the advance removed after the last block before punctuation or spaces. */
+  padding-inline-end:var(--censor-block-overlap);
+  margin-inline:0.08em;
+}
+
+/* Quotation treatment shared by block and inline forms. */
+:is(blockquote, q, quote) {
+  border-left:4px solid var(--accent);
+  background:var(--code-bg);
+  color:var(--fg);
+  border-radius:0;
+}
+blockquote {
+  margin:1em 0; padding:.9em 1.1em;
+}
+:is(q, quote) {
+  margin:0 .12em;
+  padding:.08em .35em;
+}
+blockquote > p { margin:.4em 0; }
+blockquote > * { background:transparent; border:0; }
+blockquote > :first-child { margin-top:0; }
+blockquote > :last-child  { margin-bottom:0; }
+
+/* Bare <aside> defaults to a thought block during Markdown rendering. */
+aside[thought] {
+  --thought-text-scale:1.5;
+  --thought-opening-scale:2;
+  margin:1.5em 0; padding:1em 1.2em;
+  border:5px solid var(--thought-border); border-radius:0;
+  background:var(--code-bg);
+  display:flow-root;
+  font-family:"IBM 3270", "DejaVu Sans Mono", "Liberation Mono", ui-monospace, monospace;
+  font-size:calc(1em * var(--thought-text-scale));
+  animation:adventure-chalice-border 960ms step-end infinite;
+}
+/* Nested thoughts already inherit the enlarged body text. */
+aside[thought] aside[thought] { font-size:inherit; }
+aside[thought] > :first-child { margin-top:0; }
+aside[thought] > :last-child { margin-bottom:0; }
+aside[thought] :is(p, li, blockquote) { font-family:inherit; }
+.aside-opening-word {
+  font-variant-caps:all-small-caps;
+}
+.aside-initial {
+  font-variant-caps:normal;
+  text-transform:uppercase;
+}
+.thought-opening-word {
+  font-size:calc(1em * var(--thought-opening-scale) / var(--thought-text-scale));
+}
+.thought-initial {
+  float:left;
+  margin:.18em .07em 0 0;
+  font-family:inherit;
+  font-size:min(3.9em, 40vw);
+  font-style:normal;
+  font-weight:400;
+  line-height:.55;
+}
+:where(aside[llm], span[llm]) {
+  --llm-robot-size:1.45em;
+  border:0;
+  border-radius:0;
+  background:var(--llm-background);
+  color:var(--fg);
+  font-family:"Orbitron", "Audiowide", "Share Tech Mono", "OCR A Std", "OCR A Extended", Eurostile, "Bank Gothic", ui-monospace, monospace;
+  font-size:.97rem;
+  letter-spacing:.012em;
+  line-height:1.6;
+}
+aside[llm] {
+  margin:1.5em 0;
+  padding:1em 1.2em;
+}
+aside[llm] > :first-child { margin-top:0; }
+aside[llm] > :last-child { margin-bottom:0; }
+aside[llm] :is(p, li, blockquote) { color:inherit; font-family:inherit; }
+aside[llm] .llm-marker {
+  margin:0 0 .75em;
+  line-height:1;
+}
+:where(aside[llm], span[llm]) .llm-robot {
+  display:inline-block;
+  font-size:var(--llm-robot-size);
+  line-height:1;
+  vertical-align:-.08em;
+}
+span[llm] {
+  --llm-robot-size:1.15em;
+  padding:.08em .34em .12em;
+}
+span[llm] .llm-inline-marker {
+  margin-right:.55em;
+  white-space:nowrap;
+  line-height:1;
+}
+aside[bigquestion] {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  margin:1.5em 0;
+  padding:1.15em 1.3em;
+  border:0;
+  border-radius:0;
+  background-color:var(--bigquestion-bg);
+  color:var(--bigquestion-fg);
+  font-family:"Cooper Black", "Arial Black", "Arial Rounded MT Bold",
+    "Avenir Next Heavy", "DejaVu Sans", sans-serif;
+  font-size:2.016rem;
+  font-weight:400;
+  letter-spacing:.015em;
+  line-height:1.55;
+}
+aside[bigquestion] > :first-child { margin-top:0; }
+aside[bigquestion] > .bigquestion-pattern + * { margin-top:0; }
+aside[bigquestion] > :last-child { margin-bottom:0; }
+aside[bigquestion] > :not(.bigquestion-pattern) { position:relative; z-index:1; }
+aside[bigquestion] :is(p, li, blockquote) { color:inherit; }
+aside[bigquestion] a { color:var(--bigquestion-link); }
+.bigquestion-pattern {
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+.bigquestion-mark {
+  position:absolute;
+  display:block;
+  font-family:Georgia, "Times New Roman", serif;
+  font-weight:700;
+  line-height:1;
+  transform-origin:center;
+  user-select:none;
+}
+@keyframes adventure-chalice-border {
+  0% { border-color:#f7e26b; }
+  10% { border-color:#f6b73c; }
+  20% { border-color:#e76f2e; }
+  30% { border-color:#d94b64; }
+  40% { border-color:#b45acb; }
+  50% { border-color:#6f6ad8; }
+  60% { border-color:#4f9fda; }
+  70% { border-color:#4fc3a1; }
+  80% { border-color:#83c65a; }
+  90% { border-color:#d6d85a; }
+  100% { border-color:#f7e26b; }
+}
+@media (prefers-reduced-motion: reduce) {
+  aside[thought] { animation:none; border-color:var(--thought-border); }
+}
+
+/* Emotionally inflected narrative passages within mixed technical journals. */
+:where(
+  aside[neutral],
+  aside[happy],
+  aside[sad],
+  aside[annoyed],
+  aside[disgusted],
+  aside[angry]
+) {
+  --anguish-bg:var(--anguish-background-neutral);
+  --anguish-fg:var(--anguish-foreground-neutral);
+  --anguish-initial:var(--anguish-initial-neutral);
+  --anguish-link:var(--anguish-link-neutral);
+  --anguish-mix-angle:135deg;
+  --anguish-stripe-width:1.25rem;
+  --anguish-story-font:"Iowan Old Style", "Palatino Linotype", Palatino,
+    "TeX Gyre Pagella", "Book Antiqua", Georgia, serif;
+  margin:1.75em 0;
+  padding:1.4em clamp(1.9em, 4.5vw, 3.8em) 1.55em 1.2em;
+  border:0;
+  border-radius:0;
+  background:var(--anguish-bg);
+  color:var(--anguish-fg);
+  display:flow-root;
+  font-family:var(--anguish-story-font);
+  font-size:1.06em;
+  line-height:1.75;
+}
+aside[neutral] {
+  --anguish-bg:var(--anguish-background-neutral);
+  --anguish-fg:var(--anguish-foreground-neutral);
+  --anguish-initial:var(--anguish-initial-neutral);
+  --anguish-link:var(--anguish-link-neutral);
+}
+aside[happy] {
+  --anguish-bg:var(--anguish-background-happy);
+  --anguish-fg:var(--anguish-foreground-happy);
+  --anguish-initial:var(--anguish-initial-happy);
+  --anguish-link:var(--anguish-link-happy);
+}
+aside[sad] {
+  --anguish-bg:var(--anguish-background-sad);
+  --anguish-fg:var(--anguish-foreground-sad);
+  --anguish-initial:var(--anguish-initial-sad);
+  --anguish-link:var(--anguish-link-sad);
+}
+aside[annoyed] {
+  --anguish-bg:var(--anguish-background-annoyed);
+  --anguish-fg:var(--anguish-foreground-annoyed);
+  --anguish-initial:var(--anguish-initial-annoyed);
+  --anguish-link:var(--anguish-link-annoyed);
+}
+aside[disgusted] {
+  --anguish-bg:var(--anguish-background-disgusted);
+  --anguish-fg:var(--anguish-foreground-disgusted);
+  --anguish-initial:var(--anguish-initial-disgusted);
+  --anguish-link:var(--anguish-link-disgusted);
+}
+aside[angry] {
+  --anguish-bg:var(--anguish-background-angry);
+  --anguish-fg:var(--anguish-foreground-angry);
+  --anguish-initial:var(--anguish-initial-angry);
+  --anguish-link:var(--anguish-link-angry);
+}
+aside[neutral][happy],
+aside[neutral][sad],
+aside[neutral][annoyed],
+aside[neutral][disgusted],
+aside[neutral][angry],
+aside[happy][sad],
+aside[happy][annoyed],
+aside[happy][disgusted],
+aside[happy][angry],
+aside[sad][annoyed],
+aside[sad][disgusted],
+aside[sad][angry],
+aside[annoyed][disgusted],
+aside[annoyed][angry],
+aside[disgusted][angry],
+aside[neutral][happy][sad],
+aside[neutral][happy][annoyed],
+aside[neutral][happy][disgusted],
+aside[neutral][happy][angry],
+aside[neutral][sad][annoyed],
+aside[neutral][sad][disgusted],
+aside[neutral][sad][angry],
+aside[neutral][annoyed][disgusted],
+aside[neutral][annoyed][angry],
+aside[neutral][disgusted][angry],
+aside[happy][sad][annoyed],
+aside[happy][sad][disgusted],
+aside[happy][sad][angry],
+aside[happy][annoyed][disgusted],
+aside[happy][annoyed][angry],
+aside[happy][disgusted][angry],
+aside[sad][annoyed][disgusted],
+aside[sad][annoyed][angry],
+aside[sad][disgusted][angry],
+aside[annoyed][disgusted][angry],
+aside[neutral][happy][sad][annoyed],
+aside[neutral][happy][sad][disgusted],
+aside[neutral][happy][sad][angry],
+aside[neutral][happy][annoyed][disgusted],
+aside[neutral][happy][annoyed][angry],
+aside[neutral][happy][disgusted][angry],
+aside[neutral][sad][annoyed][disgusted],
+aside[neutral][sad][annoyed][angry],
+aside[neutral][sad][disgusted][angry],
+aside[neutral][annoyed][disgusted][angry],
+aside[happy][sad][annoyed][disgusted],
+aside[happy][sad][annoyed][angry],
+aside[happy][sad][disgusted][angry],
+aside[happy][annoyed][disgusted][angry],
+aside[sad][annoyed][disgusted][angry],
+aside[neutral][happy][sad][annoyed][disgusted],
+aside[neutral][happy][sad][annoyed][angry],
+aside[neutral][happy][sad][disgusted][angry],
+aside[neutral][happy][annoyed][disgusted][angry],
+aside[neutral][sad][annoyed][disgusted][angry],
+aside[happy][sad][annoyed][disgusted][angry],
+aside[neutral][happy][sad][annoyed][disgusted][angry] {
+  --anguish-fg:var(--anguish-mixed-fg);
+  --anguish-initial:var(--anguish-mixed-initial);
+  --anguish-link:var(--anguish-mixed-link);
+}
+aside[neutral][happy] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][sad] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-sad) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][annoyed] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-annoyed) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-disgusted) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-angry) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][sad] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-sad) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][annoyed] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-annoyed) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-disgusted) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-angry) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[sad][annoyed] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0%, var(--anguish-background-annoyed) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[sad][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0 var(--anguish-stripe-width), var(--anguish-background-disgusted) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[sad][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0 var(--anguish-stripe-width), var(--anguish-background-angry) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[annoyed][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-annoyed) 0%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-annoyed) 0 var(--anguish-stripe-width), var(--anguish-background-disgusted) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[annoyed][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-annoyed) 0%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-annoyed) 0 var(--anguish-stripe-width), var(--anguish-background-angry) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-disgusted) 0%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-disgusted) 0 var(--anguish-stripe-width), var(--anguish-background-angry) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][sad] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 50%, var(--anguish-background-sad) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-sad) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][annoyed] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 50%, var(--anguish-background-annoyed) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 50%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][sad][annoyed] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-sad) 50%, var(--anguish-background-annoyed) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][sad][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-sad) 50%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][sad][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-sad) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][annoyed][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-annoyed) 50%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][annoyed][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-annoyed) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-disgusted) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-disgusted) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][sad][annoyed] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-sad) 50%, var(--anguish-background-annoyed) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][sad][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-sad) 50%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][sad][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-sad) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][annoyed][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-annoyed) 50%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][annoyed][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-annoyed) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-disgusted) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-disgusted) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[sad][annoyed][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0%, var(--anguish-background-annoyed) 50%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[sad][annoyed][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0%, var(--anguish-background-annoyed) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[sad][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0%, var(--anguish-background-disgusted) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0 var(--anguish-stripe-width), var(--anguish-background-disgusted) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[annoyed][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-annoyed) 0%, var(--anguish-background-disgusted) 50%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-annoyed) 0 var(--anguish-stripe-width), var(--anguish-background-disgusted) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][sad][annoyed] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 33.333%, var(--anguish-background-sad) 66.667%, var(--anguish-background-annoyed) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-sad) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][sad][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 33.333%, var(--anguish-background-sad) 66.667%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-sad) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][sad][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 33.333%, var(--anguish-background-sad) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-sad) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][annoyed][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 33.333%, var(--anguish-background-annoyed) 66.667%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][annoyed][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 33.333%, var(--anguish-background-annoyed) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 33.333%, var(--anguish-background-disgusted) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][sad][annoyed][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-sad) 33.333%, var(--anguish-background-annoyed) 66.667%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][sad][annoyed][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-sad) 33.333%, var(--anguish-background-annoyed) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][sad][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-sad) 33.333%, var(--anguish-background-disgusted) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][annoyed][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-annoyed) 33.333%, var(--anguish-background-disgusted) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][sad][annoyed][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-sad) 33.333%, var(--anguish-background-annoyed) 66.667%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][sad][annoyed][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-sad) 33.333%, var(--anguish-background-annoyed) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][sad][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-sad) 33.333%, var(--anguish-background-disgusted) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][annoyed][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-annoyed) 33.333%, var(--anguish-background-disgusted) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[sad][annoyed][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0%, var(--anguish-background-annoyed) 33.333%, var(--anguish-background-disgusted) 66.667%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-sad) 0 var(--anguish-stripe-width), var(--anguish-background-annoyed) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][sad][annoyed][disgusted] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 25%, var(--anguish-background-sad) 50%, var(--anguish-background-annoyed) 75%, var(--anguish-background-disgusted) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-sad) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][sad][annoyed][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 25%, var(--anguish-background-sad) 50%, var(--anguish-background-annoyed) 75%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-sad) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][sad][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 25%, var(--anguish-background-sad) 50%, var(--anguish-background-disgusted) 75%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-sad) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][annoyed][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 25%, var(--anguish-background-annoyed) 50%, var(--anguish-background-disgusted) 75%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][sad][annoyed][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-sad) 25%, var(--anguish-background-annoyed) 50%, var(--anguish-background-disgusted) 75%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[happy][sad][annoyed][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0%, var(--anguish-background-sad) 25%, var(--anguish-background-annoyed) 50%, var(--anguish-background-disgusted) 75%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-happy) 0 var(--anguish-stripe-width), var(--anguish-background-sad) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][sad][annoyed][disgusted][angry] {
+  --anguish-gradient-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0%, var(--anguish-background-happy) 20%, var(--anguish-background-sad) 40%, var(--anguish-background-annoyed) 60%, var(--anguish-background-disgusted) 80%, var(--anguish-background-angry) 100%);
+  --anguish-stripes-bg:
+    linear-gradient(var(--anguish-shade), var(--anguish-shade)),
+    repeating-linear-gradient(var(--anguish-mix-angle), var(--anguish-background-neutral) 0 var(--anguish-stripe-width), var(--anguish-background-happy) var(--anguish-stripe-width) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-sad) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-annoyed) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-disgusted) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)), var(--anguish-background-angry) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)) calc(var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width) + var(--anguish-stripe-width)));
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][gradient],
+aside[neutral][sad][gradient],
+aside[neutral][annoyed][gradient],
+aside[neutral][disgusted][gradient],
+aside[neutral][angry][gradient],
+aside[happy][sad][gradient],
+aside[happy][annoyed][gradient],
+aside[happy][disgusted][gradient],
+aside[happy][angry][gradient],
+aside[sad][annoyed][gradient],
+aside[sad][disgusted][gradient],
+aside[sad][angry][gradient],
+aside[annoyed][disgusted][gradient],
+aside[annoyed][angry][gradient],
+aside[disgusted][angry][gradient],
+aside[neutral][happy][sad][gradient],
+aside[neutral][happy][annoyed][gradient],
+aside[neutral][happy][disgusted][gradient],
+aside[neutral][happy][angry][gradient],
+aside[neutral][sad][annoyed][gradient],
+aside[neutral][sad][disgusted][gradient],
+aside[neutral][sad][angry][gradient],
+aside[neutral][annoyed][disgusted][gradient],
+aside[neutral][annoyed][angry][gradient],
+aside[neutral][disgusted][angry][gradient],
+aside[happy][sad][annoyed][gradient],
+aside[happy][sad][disgusted][gradient],
+aside[happy][sad][angry][gradient],
+aside[happy][annoyed][disgusted][gradient],
+aside[happy][annoyed][angry][gradient],
+aside[happy][disgusted][angry][gradient],
+aside[sad][annoyed][disgusted][gradient],
+aside[sad][annoyed][angry][gradient],
+aside[sad][disgusted][angry][gradient],
+aside[annoyed][disgusted][angry][gradient],
+aside[neutral][happy][sad][annoyed][gradient],
+aside[neutral][happy][sad][disgusted][gradient],
+aside[neutral][happy][sad][angry][gradient],
+aside[neutral][happy][annoyed][disgusted][gradient],
+aside[neutral][happy][annoyed][angry][gradient],
+aside[neutral][happy][disgusted][angry][gradient],
+aside[neutral][sad][annoyed][disgusted][gradient],
+aside[neutral][sad][annoyed][angry][gradient],
+aside[neutral][sad][disgusted][angry][gradient],
+aside[neutral][annoyed][disgusted][angry][gradient],
+aside[happy][sad][annoyed][disgusted][gradient],
+aside[happy][sad][annoyed][angry][gradient],
+aside[happy][sad][disgusted][angry][gradient],
+aside[happy][annoyed][disgusted][angry][gradient],
+aside[sad][annoyed][disgusted][angry][gradient],
+aside[neutral][happy][sad][annoyed][disgusted][gradient],
+aside[neutral][happy][sad][annoyed][angry][gradient],
+aside[neutral][happy][sad][disgusted][angry][gradient],
+aside[neutral][happy][annoyed][disgusted][angry][gradient],
+aside[neutral][sad][annoyed][disgusted][angry][gradient],
+aside[happy][sad][annoyed][disgusted][angry][gradient],
+aside[neutral][happy][sad][annoyed][disgusted][angry][gradient] {
+  --anguish-bg:var(--anguish-gradient-bg);
+}
+aside[neutral][happy][stripes],
+aside[neutral][sad][stripes],
+aside[neutral][annoyed][stripes],
+aside[neutral][disgusted][stripes],
+aside[neutral][angry][stripes],
+aside[happy][sad][stripes],
+aside[happy][annoyed][stripes],
+aside[happy][disgusted][stripes],
+aside[happy][angry][stripes],
+aside[sad][annoyed][stripes],
+aside[sad][disgusted][stripes],
+aside[sad][angry][stripes],
+aside[annoyed][disgusted][stripes],
+aside[annoyed][angry][stripes],
+aside[disgusted][angry][stripes],
+aside[neutral][happy][sad][stripes],
+aside[neutral][happy][annoyed][stripes],
+aside[neutral][happy][disgusted][stripes],
+aside[neutral][happy][angry][stripes],
+aside[neutral][sad][annoyed][stripes],
+aside[neutral][sad][disgusted][stripes],
+aside[neutral][sad][angry][stripes],
+aside[neutral][annoyed][disgusted][stripes],
+aside[neutral][annoyed][angry][stripes],
+aside[neutral][disgusted][angry][stripes],
+aside[happy][sad][annoyed][stripes],
+aside[happy][sad][disgusted][stripes],
+aside[happy][sad][angry][stripes],
+aside[happy][annoyed][disgusted][stripes],
+aside[happy][annoyed][angry][stripes],
+aside[happy][disgusted][angry][stripes],
+aside[sad][annoyed][disgusted][stripes],
+aside[sad][annoyed][angry][stripes],
+aside[sad][disgusted][angry][stripes],
+aside[annoyed][disgusted][angry][stripes],
+aside[neutral][happy][sad][annoyed][stripes],
+aside[neutral][happy][sad][disgusted][stripes],
+aside[neutral][happy][sad][angry][stripes],
+aside[neutral][happy][annoyed][disgusted][stripes],
+aside[neutral][happy][annoyed][angry][stripes],
+aside[neutral][happy][disgusted][angry][stripes],
+aside[neutral][sad][annoyed][disgusted][stripes],
+aside[neutral][sad][annoyed][angry][stripes],
+aside[neutral][sad][disgusted][angry][stripes],
+aside[neutral][annoyed][disgusted][angry][stripes],
+aside[happy][sad][annoyed][disgusted][stripes],
+aside[happy][sad][annoyed][angry][stripes],
+aside[happy][sad][disgusted][angry][stripes],
+aside[happy][annoyed][disgusted][angry][stripes],
+aside[sad][annoyed][disgusted][angry][stripes],
+aside[neutral][happy][sad][annoyed][disgusted][stripes],
+aside[neutral][happy][sad][annoyed][angry][stripes],
+aside[neutral][happy][sad][disgusted][angry][stripes],
+aside[neutral][happy][annoyed][disgusted][angry][stripes],
+aside[neutral][sad][annoyed][disgusted][angry][stripes],
+aside[happy][sad][annoyed][disgusted][angry][stripes],
+aside[neutral][happy][sad][annoyed][disgusted][angry][stripes] {
+  --anguish-bg:var(--anguish-stripes-bg);
+}
+:where(
+  aside[neutral],
+  aside[happy],
+  aside[sad],
+  aside[annoyed],
+  aside[disgusted],
+  aside[angry]
+) > :first-child { margin-top:0; }
+:where(
+  aside[neutral],
+  aside[happy],
+  aside[sad],
+  aside[annoyed],
+  aside[disgusted],
+  aside[angry]
+) > :last-child { margin-bottom:0; }
+:where(
+  aside[neutral],
+  aside[happy],
+  aside[sad],
+  aside[annoyed],
+  aside[disgusted],
+  aside[angry]
+) > :is(ul, ol) { clear:left; }
+:where(
+  aside[neutral],
+  aside[happy],
+  aside[sad],
+  aside[annoyed],
+  aside[disgusted],
+  aside[angry]
+) :is(p, li, blockquote) {
+  color:var(--anguish-fg);
+  font-family:var(--anguish-story-font);
+}
+:where(
+  aside[neutral],
+  aside[happy],
+  aside[sad],
+  aside[annoyed],
+  aside[disgusted],
+  aside[angry]
+) a { color:var(--anguish-link); }
+:where(
+  aside[neutral],
+  aside[happy],
+  aside[sad],
+  aside[annoyed],
+  aside[disgusted],
+  aside[angry]
+) > p:first-of-type .aside-initial {
+  float:left;
+  margin:.08em .07em 0 0;
+  color:var(--anguish-initial);
+  font-family:"Zierinitialen 1", Metamorphous, "MathJax_Fraktur", "Cinzel Decorative", Copperplate, "Noto Serif Display", "TeX Gyre Schola", Georgia, serif;
+  font-size:4.6em;
+  font-style:normal;
+  font-weight:400;
+  line-height:.74;
+}
+aside[disgusted] {
+  --anguish-story-font:Purisa, "Comic Sans MS", "Chalkboard SE", cursive;
+}
+aside[disgusted] > p:first-of-type .aside-initial {
+  font-family:"MathJax_Script", "MathJax_Caligraphic", "Curlz MT",
+    Harrington, "Blackadder ITC", cursive;
+  font-size:5.1em;
+  font-weight:400;
+  letter-spacing:-.04em;
+}
+/* Sarcasm steps outside the emotion palette and onto a chalkboard. */
+aside[sarcastic] {
+  --sarcastic-board:#172a24;
+  --sarcastic-chalk:#eee9d6;
+  --sarcastic-link:#b9dfd1;
+  --sarcastic-frame-light:#9b7044;
+  --sarcastic-frame-dark:#4b2e19;
+  --sarcastic-jitter-amount:0.11;
+  --sarcastic-jitter-probability:0.22;
+  margin:1.9em .35em;
+  padding:clamp(1.3em, 3vw, 2.2em) clamp(1.15em, 4vw, 2.8em);
+  border:clamp(10px, 1.35vw, 16px) solid transparent;
+  border-radius:3px;
+  background:
+    radial-gradient(ellipse at 18% 24%, rgba(255,255,255,.045), transparent 28%) padding-box,
+    radial-gradient(ellipse at 76% 68%, rgba(255,255,255,.035), transparent 31%) padding-box,
+    repeating-linear-gradient(4deg, transparent 0 8px, rgba(255,255,255,.012) 9px 10px) padding-box,
+    linear-gradient(var(--sarcastic-board), var(--sarcastic-board)) padding-box,
+    repeating-linear-gradient(
+      88deg,
+      var(--sarcastic-frame-dark) 0 3px,
+      #76502e 3px 9px,
+      var(--sarcastic-frame-light) 9px 12px,
+      #664326 12px 19px
+    ) border-box;
+  box-shadow:
+    0 5px 13px rgba(0,0,0,.42),
+    inset 0 0 0 2px rgba(232,217,181,.12),
+    inset 0 0 24px rgba(0,0,0,.42);
+  color:var(--sarcastic-chalk);
+  font-family:"Chalkboard SE", "Comic Sans MS", "Segoe Print", "Bradley Hand",
+    "Marker Felt", Purisa, cursive;
+  font-size:1.08em;
+  font-weight:400;
+  letter-spacing:.018em;
+  line-height:1.58;
+  text-shadow:.018em .018em .03em rgba(255,255,255,.36);
+}
+aside[sarcastic] > :first-child { margin-top:0; }
+aside[sarcastic] > :last-child { margin-bottom:0; }
+aside[sarcastic] :is(p, li, blockquote) {
+  color:var(--sarcastic-chalk);
+  font-family:inherit;
+}
+aside[sarcastic] a { color:var(--sarcastic-link); }
+aside[sarcastic] > p:first-of-type .aside-initial {
+  float:left;
+  margin:.09em .08em 0 0;
+  color:#fff8df;
+  font-family:inherit;
+  font-size:2.7em;
+  font-style:normal;
+  font-weight:700;
+  line-height:.78;
+}
+.sarcastic-jitter-letter { position:relative; }
+
+hr { border:0; border-top:1px solid var(--border); margin:2em 0; }
+pre,code,kbd,samp {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+pre {
+  background:var(--code-block-bg);
+  padding:1em; overflow:auto; border:1px solid var(--border); border-radius:0;
+  font-size:.97rem; line-height:1.55;
+}
+:where(.terminal-comment, .inline-terminal-comment) {
+  padding:0;
+  border:0; border-radius:0; background:transparent;
+  color:var(--terminal-comment);
+  font-family:"Courier New", Courier, "Lucida Console", Monaco, monospace;
+}
+:where(.terminal-comment, .inline-terminal-comment) a { color:inherit; }
+.terminal-comment {
+  margin:1.5em 0; overflow:visible;
+  font-size:.97rem; line-height:1.5;
+  white-space:pre-wrap; overflow-wrap:anywhere;
+}
+.inline-terminal-comment {
+  font-size:.97em; line-height:inherit;
+}
+.todo-span {
+  padding:.06em .28em .1em;
+  border:0;
+  background:#e6c84f;
+  color:#211d0d;
+}
+.todo-span :is(a, strong, em, u, s) { color:inherit; }
+.todo-keyword { font-weight:800; letter-spacing:.025em; }
+pre .todo-span { padding:0; }
+.article-tag {
+  display:inline;
+  margin:0 .04em;
+  padding:.06em .3em .1em;
+  border:0;
+  border-radius:2px;
+  background:var(--article-tag-bg);
+  color:var(--article-tag-fg);
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size:1.08em;
+  font-weight:700;
+  letter-spacing:.025em;
+  line-height:inherit;
+}
+:where(span[llm], .todo-span, .article-tag) {
+  box-decoration-break:clone;
+  -webkit-box-decoration-break:clone;
+}
+.article-tag-anchor,
+.todo-anchor,
+.llm-inline-anchor {
+  /* Navigation targets must not interrupt the paragraph's first formatted line. */
+  position:absolute;
+  display:block;
+  width:0;
+  height:0;
+  scroll-margin-top:0;
+}
+:where(p, li, blockquote, h1, h2, h3, h4, h5, h6):has(> .todo-anchor:target) .todo-span {
+  background:var(--highlight-bg);
+  color:var(--highlight-fg);
+}
+:where(p, li, blockquote, h1, h2, h3, h4, h5, h6, .terminal-comment):has(> .article-tag-anchor:target) .article-tag {
+  background:var(--highlight-bg);
+  color:var(--highlight-fg);
+  text-shadow:none;
+}
+.media-item:has(> .article-tag-anchor:target) .article-tag,
+.media-grid:has(> .media-item:first-child > .article-tag-anchor:target) > .media-group-caption .article-tag {
+  background:var(--highlight-bg);
+  color:var(--highlight-fg);
+  text-shadow:none;
+}
+code { background:var(--code-bg); padding:.15em .35em; border:1px solid var(--border); border-radius:0; }
+pre code {
+  background:transparent; padding:0; border:0; border-radius:0;
+  font-size:inherit; line-height:inherit;
+}
+aside pre { border:0; }
+table { border-collapse:collapse; width:100%; max-width:100%; }
+th,td { border:1px solid var(--border); padding:8px 10px; }
+img { max-width:100%; height:auto; display:block; border:1px solid var(--border); border-radius:0; }
+/* Markdown often wraps images in <p>; help keep the whole thing together */
+p > img { display:block; }
+.media-grid {
+  display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start;
+  margin:1.2em 0 1.6em;
+}
+.media-item {
+  flex:1 1 280px; max-width:340px; margin:0;
+}
+.media-standalone {
+  margin:1.2em 0 1.6em;
+}
+.media-standalone > img { width:auto; max-width:100%; }
+.media-open {
+  display:flex; align-items:center; justify-content:center;
+  width:100%; height:260px; padding:0; margin:0;
+  color:inherit; background:transparent; border:1px solid var(--border);
+  border-radius:0; cursor:zoom-in; text-align:inherit;
+}
+.media-open:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.media-open img {
+  max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain;
+  border:0; background:var(--code-bg);
+}
+.media-item figcaption,
+.media-standalone figcaption,
+.media-group-caption {
+  color:color-mix(in srgb, var(--muted) 50%, var(--fg) 50%);
+  font-size:inherit; font-style:italic; line-height:1.5;
+}
+.media-item figcaption,
+.media-standalone figcaption { margin:.45em 0 0; }
+.media-group-caption {
+  flex:1 0 100%; margin:-.2em 0 0;
+}
+
+.reader-dialog {
+  position:fixed; inset:0; width:100vw; height:100%; height:100dvh;
+  max-width:none; max-height:none; margin:0; padding:clamp(8px, 2vw, 24px);
+  box-sizing:border-box; border:0; color:var(--fg); background:transparent;
+}
+.reader-dialog[open] { display:flex; align-items:center; justify-content:center; }
+.reader-dialog::backdrop { background:var(--bg); }
+html.reader-dialog-open { overflow:hidden; }
+.reader-dialog__panel {
+  width:min(100%, var(--dialog-width, 1800px)); max-height:100%; min-width:0;
+  display:flex; flex-direction:column; gap:12px;
+}
+.reader-dialog__header { display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+.reader-dialog__title { margin:0; font-size:1.2rem; overflow-wrap:anywhere; }
+.reader-dialog__button {
+  flex:0 0 auto; min-height:44px; padding:6px 12px;
+  color:var(--fg); background:var(--code-bg); border:1px solid var(--border);
+  cursor:pointer; font:inherit;
+}
+.reader-dialog__button:hover { color:var(--accent); border-color:var(--accent); }
+.reader-dialog__button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.reader-dialog__close { margin-left:auto; white-space:nowrap; }
+.reader-dialog__content { min-height:0; overflow:auto; overscroll-behavior:contain; }
+.reader-dialog__content[data-dialog-scroll] { scrollbar-gutter:stable; }
+.reader-dialog__content:focus { outline:none; }
+.reader-dialog__shortcuts { margin:0; color:var(--muted); font-size:.8rem; }
+
+.image-viewer .reader-dialog__panel { height:100%; }
+.image-viewer__body { flex:1; overflow:hidden; }
+.image-viewer__stage {
+  position:relative; display:grid; grid-template-rows:minmax(0, 1fr) auto; gap:8px;
+  height:100%; min-width:0;
+}
+.image-viewer__link {
+  display:flex; align-items:center; justify-content:center;
+  min-height:0; min-width:0;
+}
+.image-viewer__image {
+  max-width:100%; max-height:100%; width:100%; height:100%; min-width:0; min-height:0;
+  object-fit:contain; border:1px solid var(--border); background:var(--code-bg);
+}
+.image-viewer__caption {
+  color:var(--fg); font-size:1rem; font-style:italic; line-height:1.5; text-align:center;
+  max-width:min(100%, 900px); margin:0 auto; overflow-wrap:anywhere;
+  max-height:20dvh; overflow:auto;
+}
+.image-viewer__caption[data-empty="true"] { color:var(--muted); opacity:.72; }
+.image-viewer__button {
+  position:absolute; display:grid; place-items:center;
+  top:50%; transform:translateY(-50%);
+}
+.image-viewer__prev { left:0; }
+.image-viewer__next { right:0; }
+.toc { border:1px solid var(--border); padding:12px; background:var(--code-bg); border-radius:0; }
+.print-toc { display:none; }
+.heading-menu {
+  grid-column:1; grid-row:1; position:sticky; top:0; z-index:50;
+  display:flex; flex-direction:column;
+  width:var(--heading-menu-width); height:100vh; height:100dvh; overflow:hidden;
+  background:var(--code-bg); border-right:1px solid var(--border);
+}
+body.heading-menu-collapsed .heading-menu { display:none; }
+.heading-menu__header {
+  position:relative; z-index:1; display:flex; flex:0 0 auto; align-items:center;
+  gap:6px; min-height:52px; padding:8px 10px 8px 16px;
+  background:var(--code-bg); border-bottom:1px solid var(--border);
+}
+.heading-menu__title {
+  margin:0; color:var(--fg); font:700 .9rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  letter-spacing:.04em; text-transform:uppercase;
+}
+.heading-menu__close,
+.heading-menu__open,
+.heading-menu__branch-toggle,
+.heading-menu__level-button,
+.heading-menu__root-level-button {
+  display:grid; place-items:center; padding:0; color:var(--fg); background:transparent;
+  border:1px solid transparent; border-radius:0; cursor:pointer;
+  -webkit-appearance:none; appearance:none; touch-action:manipulation;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  text-decoration:none;
+}
+.heading-menu__levels { display:flex; gap:2px; margin-left:auto; }
+.heading-menu__level-button { width:24px; height:28px; color:var(--muted); font-size:.78rem; }
+.heading-menu__root-levels { display:flex; gap:1px; padding-top:2px; }
+.heading-menu__root-level-button { width:21px; height:24px; color:var(--muted); font-size:.7rem; }
+.heading-menu__level-button[aria-pressed="true"],
+.heading-menu__root-level-button[aria-pressed="true"] {
+  color:var(--bg); background:var(--accent); border-color:var(--accent);
+}
+.heading-menu__close { min-width:34px; min-height:34px; margin-left:2px; padding:4px; font-size:.8rem; white-space:nowrap; }
+.heading-menu__open {
+  position:fixed; top:12px; left:12px; z-index:51; display:none;
+  width:42px; height:42px; background:var(--code-bg); border-color:var(--border);
+  font-size:1.25rem;
+}
+body.heading-menu-collapsed .heading-menu__open { display:grid; }
+.heading-menu__close:hover,
+.heading-menu__open:hover,
+.heading-menu__branch-toggle:hover,
+.heading-menu__level-button:hover,
+.heading-menu__root-level-button:hover { color:var(--accent); border-color:var(--border); }
+.heading-menu__level-button[aria-pressed="true"]:hover,
+.heading-menu__root-level-button[aria-pressed="true"]:hover { color:var(--bg); border-color:var(--accent); }
+.heading-menu__close:focus-visible,
+.heading-menu__open:focus-visible,
+.heading-menu__branch-toggle:focus-visible,
+.heading-menu__level-button:focus-visible,
+.heading-menu__root-level-button:focus-visible,
+.heading-menu__link:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.heading-menu__nav {
+  flex:1 1 auto; min-height:0; overflow-y:auto; padding:12px 10px 24px;
+  -webkit-overflow-scrolling:touch;
+}
+.heading-menu__tree,
+.heading-menu__tree ul { margin:0; padding:0; list-style:none; }
+.heading-menu__tree ul { margin-left:11px; padding-left:11px; border-left:1px solid var(--border); }
+.heading-menu__tree ul[hidden] { display:none; }
+.heading-menu__item { margin:2px 0; }
+.heading-menu__row {
+  display:grid; grid-template-columns:22px minmax(0, 1fr) auto;
+  align-items:start; column-gap:2px;
+}
+.heading-menu__branch-toggle { width:22px; height:28px; font-size:.75rem; line-height:1; }
+.heading-menu__branch-toggle[aria-expanded="false"] { transform:rotate(-90deg); }
+.heading-menu__branch-spacer { width:22px; height:28px; }
+.heading-menu__link,
+.heading-menu__label {
+  display:block; min-width:0; padding:3px 4px; color:var(--fg); font-size:.88rem;
+  line-height:1.45; overflow-wrap:anywhere;
+}
+.heading-menu__label { font-weight:700; }
+button.heading-menu__label {
+  width:100%; margin:0; border:0; background:transparent; cursor:pointer;
+  font-family:inherit; text-align:left;
+}
+.heading-menu__link:hover,
+.heading-menu__label[data-heading-label-toggle]:hover { color:var(--link); }
+.text-boundary { display:block; width:100%; overflow:hidden; margin:1.2em 0; font-family:"IBM 3270", "DejaVu Sans Mono", "Liberation Mono", ui-monospace, monospace; text-align:left; white-space:nowrap; }
+.convnote {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-weight:600; color:var(--muted); margin:0 0 1rem 0;
+}
+.reader-controls {
+  position:fixed; top:12px; right:12px; z-index:60;
+  display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; max-width:calc(100vw - 24px);
+}
+.reader-controls button {
+  display:grid; place-items:center; min-width:42px; height:42px; padding:0 10px;
+  color:var(--fg); background:var(--code-bg); border:1px solid var(--border);
+  border-radius:0; cursor:pointer; font:1.25rem/1 system-ui,sans-serif;
+}
+.reader-controls .image-layout-option { font-size:.85rem; }
+.reader-controls button[aria-pressed="true"] {
+  color:var(--bg); background:var(--accent); border-color:var(--accent);
+  box-shadow:0 0 0 1px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 42%, transparent);
+  font-weight:700;
+}
+.reader-controls button:hover { color:var(--accent); border-color:var(--accent); }
+.reader-controls button[aria-pressed="true"]:hover { color:var(--bg); }
+.reader-controls button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+/* -------- Print/PDF tuning -------- */
+@page { size:A4 portrait; margin:9mm; }
+@media print {
+  :root, :root[data-theme] {
+  color-scheme:light;
+  --bg:#ffffff;
+  --fg:#1b1f23;
+  --censor-image-bg:#000000;
+  --muted:#586069;
+  --link:#174ea6;
+  --accent:#176b3a;
+  --code-bg:#f5f7f9;
+  --code-block-bg:#eef1f4;
+  --border:#c8d0d8;
+  --thought-border:#a77b00;
+  --llm-background:#eef0f2;
+  --terminal-comment:#176b3a;
+  --article-tag-bg:rgba(167,123,0,.16);
+  --article-tag-fg:#664b00;
+  --highlight-bg:#f4d03f;
+  --highlight-fg:#171409;
+  --bigquestion-bg:#dceede;
+  --bigquestion-fg:#203126;
+  --bigquestion-link:#4b2765;
+  --anguish-shade:rgba(255,255,255,.22);
+  --anguish-mixed-fg:#202428;
+  --anguish-mixed-initial:#573a18;
+  --anguish-mixed-link:#174ea6;
+  --anguish-background-neutral:#eef0f2;
+  --anguish-foreground-neutral:#202428;
+  --anguish-initial-neutral:#573a18;
+  --anguish-link-neutral:#174ea6;
+  --anguish-background-happy:#fff2b8;
+  --anguish-foreground-happy:#202428;
+  --anguish-initial-happy:#573a18;
+  --anguish-link-happy:#174ea6;
+  --anguish-background-sad:#dceaf7;
+  --anguish-foreground-sad:#202428;
+  --anguish-initial-sad:#573a18;
+  --anguish-link-sad:#174ea6;
+  --anguish-background-annoyed:#f8dfc8;
+  --anguish-foreground-annoyed:#202428;
+  --anguish-initial-annoyed:#573a18;
+  --anguish-link-annoyed:#174ea6;
+  --anguish-background-disgusted:#edf2bd;
+  --anguish-foreground-disgusted:#202428;
+  --anguish-initial-disgusted:#573a18;
+  --anguish-link-disgusted:#174ea6;
+  --anguish-background-angry:#f7dce2;
+  --anguish-foreground-angry:#202428;
+  --anguish-initial-angry:#573a18;
+  --anguish-link-angry:#174ea6;
+}
+  .reader-dialog { display:none !important; }
+  body.has-heading-menu { display:block; }
+  body.has-heading-menu.heading-menu-collapsed > main { margin-top:0; }
+
+  html, body {
+    background:var(--bg) !important;
+    color:var(--fg) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  main { max-width:100%; margin:0; padding:0; }
+  .print-toc {
+    display:block;
+    break-after:page;
+    page-break-after:always;
+  }
+  .print-toc__title {
+    margin:0 0 1rem;
+    color:var(--fg);
+    font-size:1.8rem;
+    font-weight:700;
+  }
+  .print-toc__tree,
+  .print-toc__tree ul { margin:.3rem 0; padding-left:1.35rem; }
+  .print-toc__tree { padding-left:0; list-style:none; }
+  .print-toc__link,
+  .print-toc__label { color:var(--fg); line-height:1.45; }
+  .print-toc__label { font-weight:700; }
+
+  /* DO NOT split images (or their wrapping <p>), figures, code, tables, quotes */
+  img, figure, pre, blockquote, aside, table, thead, tr, .codehilite {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    -moz-column-break-inside: avoid;
+  }
+  /* If Markdown puts the image inside a paragraph, keep that paragraph intact */
+  p:has(> img) {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  /* Fallback when :has isn't supported — still helps many engines */
+  p > img { break-inside: avoid; page-break-inside: avoid; }
+
+  /* also avoid splitting headings from the next block */
+  h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
+
+  /* nicer paragraphs */
+  p { orphans:3; widows:3; }
+
+  /* suppress URL after links */
+  a::after { content:""; }
+
+  .no-print { display:none !important; }
+  aside[thought] {
+    animation:none;
+  }
+  .bigquestion-pattern { display:none !important; }
+}
+
+/* page utility for manual control */
+.page-break { break-after: page; page-break-after: always; }
+
+/* -------- Mobile tweaks -------- */
+@media (max-width: 840px) {
+  .reader-controls { left:64px; right:8px; max-width:none; gap:4px; }
+  .reader-controls button { min-width:36px; padding-inline:7px; }
+  .reader-controls [data-reader-group="image-layout"] { display:none; }
+  .reader-dialog { padding:8px; }
+  .reader-dialog__panel { gap:6px; }
+  .reader-dialog__header { gap:6px; }
+  .word-cloud-details__table th:nth-child(3),
+  .word-cloud-details__table td:nth-child(3) { width:20%; }
+  body.has-heading-menu { display:block; }
+  body.has-heading-menu > main { width:auto; }
+  .heading-menu {
+    position:fixed; inset:0 auto 0 0; width:86vw; max-width:var(--heading-menu-width);
+    box-shadow:12px 0 30px rgba(0,0,0,.42);
+  }
+  .heading-menu__close { min-height:44px; }
+  .heading-menu__levels { min-width:0; overflow-x:auto; }
+  .heading-menu__level-button { min-height:40px; }
+  .heading-menu__root-level-button { min-width:28px; min-height:36px; }
+  .heading-menu__row { grid-template-columns:36px minmax(0, 1fr) auto; }
+  .heading-menu__branch-toggle,
+  .heading-menu__branch-spacer { width:36px; min-height:40px; }
+  body:not(.heading-menu-ready) .heading-menu:not(:target) { display:none; }
+  body:not(.heading-menu-ready) .heading-menu__open { display:grid; }
+  body:not(.heading-menu-ready) .heading-menu:target + .heading-menu__open { display:none; }
+  main { max-width:720px; margin:0 auto; padding:64px 16px 16px; }
+  h1 { font-size:1.8rem; }
+  .article-header { flex-direction:column; align-items:flex-start; gap:.75rem; }
+  .article-header__logo { max-width:min(240px, 100%); }
+  h2 { font-size:1.4rem; }
+  table { table-layout:fixed; }
+  th,td {
+    min-width:0; padding:6px 5px;
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+  img { width:100%; height:auto; }
+  .media-grid { gap:12px; }
+  .media-item { flex-basis:100%; max-width:none; }
+  .media-open { height:auto; }
+  .media-open img { width:100%; max-height:none; }
+}
+@media (pointer:coarse), (max-width: 840px) {
+  .keyboard-hint, .reader-dialog__shortcuts { display:none; }
+}
+@media screen and (min-width: 841px) {
+  :root[data-image-layout="figures"] .media-grid { display:block; }
+  :root[data-image-layout="figures"] .media-item { max-width:none; margin:1.2em 0; }
+  :root[data-image-layout="figures"] .media-open { height:auto; }
+  :root[data-image-layout="figures"] .media-open img { width:100%; max-height:none; }
+  :root[data-image-layout="two-thirds"] .media-grid { display:block; }
+  :root[data-image-layout="two-thirds"] .media-item { width:67%; max-width:67%; margin:1.2em 0; }
+  :root[data-image-layout="two-thirds"] .media-open { height:auto; }
+  :root[data-image-layout="two-thirds"] .media-open img { width:100%; max-height:none; }
+}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.codehilite .hll { background-color: #ffffcc }
+.codehilite { background: #f8f8f8; }
+.codehilite .c { color: #3D7B7B; font-style: italic } /* Comment */
+.codehilite .err { border: 1px solid #F00 } /* Error */
+.codehilite .k { color: #008000; font-weight: bold } /* Keyword */
+.codehilite .o { color: #666 } /* Operator */
+.codehilite .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.codehilite .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.codehilite .cp { color: #9C6500 } /* Comment.Preproc */
+.codehilite .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.codehilite .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.codehilite .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.codehilite .gd { color: #A00000 } /* Generic.Deleted */
+.codehilite .ge { font-style: italic } /* Generic.Emph */
+.codehilite .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.codehilite .gr { color: #E40000 } /* Generic.Error */
+.codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.codehilite .gi { color: #008400 } /* Generic.Inserted */
+.codehilite .go { color: #717171 } /* Generic.Output */
+.codehilite .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.codehilite .gs { font-weight: bold } /* Generic.Strong */
+.codehilite .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.codehilite .gt { color: #04D } /* Generic.Traceback */
+.codehilite .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.codehilite .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.codehilite .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.codehilite .kp { color: #008000 } /* Keyword.Pseudo */
+.codehilite .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.codehilite .kt { color: #B00040 } /* Keyword.Type */
+.codehilite .m { color: #666 } /* Literal.Number */
+.codehilite .s { color: #BA2121 } /* Literal.String */
+.codehilite .na { color: #687822 } /* Name.Attribute */
+.codehilite .nb { color: #008000 } /* Name.Builtin */
+.codehilite .nc { color: #00F; font-weight: bold } /* Name.Class */
+.codehilite .no { color: #800 } /* Name.Constant */
+.codehilite .nd { color: #A2F } /* Name.Decorator */
+.codehilite .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.codehilite .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.codehilite .nf { color: #00F } /* Name.Function */
+.codehilite .nl { color: #767600 } /* Name.Label */
+.codehilite .nn { color: #00F; font-weight: bold } /* Name.Namespace */
+.codehilite .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.codehilite .nv { color: #19177C } /* Name.Variable */
+.codehilite .ow { color: #A2F; font-weight: bold } /* Operator.Word */
+.codehilite .w { color: #BBB } /* Text.Whitespace */
+.codehilite .mb { color: #666 } /* Literal.Number.Bin */
+.codehilite .mf { color: #666 } /* Literal.Number.Float */
+.codehilite .mh { color: #666 } /* Literal.Number.Hex */
+.codehilite .mi { color: #666 } /* Literal.Number.Integer */
+.codehilite .mo { color: #666 } /* Literal.Number.Oct */
+.codehilite .sa { color: #BA2121 } /* Literal.String.Affix */
+.codehilite .sb { color: #BA2121 } /* Literal.String.Backtick */
+.codehilite .sc { color: #BA2121 } /* Literal.String.Char */
+.codehilite .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.codehilite .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.codehilite .s2 { color: #BA2121 } /* Literal.String.Double */
+.codehilite .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.codehilite .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.codehilite .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.codehilite .sx { color: #008000 } /* Literal.String.Other */
+.codehilite .sr { color: #A45A77 } /* Literal.String.Regex */
+.codehilite .s1 { color: #BA2121 } /* Literal.String.Single */
+.codehilite .ss { color: #19177C } /* Literal.String.Symbol */
+.codehilite .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.codehilite .fm { color: #00F } /* Name.Function.Magic */
+.codehilite .vc { color: #19177C } /* Name.Variable.Class */
+.codehilite .vg { color: #19177C } /* Name.Variable.Global */
+.codehilite .vi { color: #19177C } /* Name.Variable.Instance */
+.codehilite .vm { color: #19177C } /* Name.Variable.Magic */
+.codehilite .il { color: #666 } /* Literal.Number.Integer.Long */</style>
+</head>
+<body class="has-heading-menu">
+<aside aria-label="Table of contents" class="heading-menu no-print" data-heading-menu="" id="article-heading-menu"><div class="heading-menu__header"><p class="heading-menu__title">Contents</p><div aria-label="Expand heading levels" class="heading-menu__levels" role="group"><button aria-label="Show root nodes only" aria-pressed="true" class="heading-menu__level-button" data-heading-menu-level="0" type="button">0</button><button aria-label="Show Contents through depth 1" aria-pressed="false" class="heading-menu__level-button" data-heading-menu-level="1" type="button">1</button><button aria-label="Show Contents through depth 2" aria-pressed="false" class="heading-menu__level-button" data-heading-menu-level="2" type="button">2</button></div><a aria-controls="article-heading-menu" aria-expanded="true" aria-keyshortcuts="Escape" aria-label="Toggle contents (Esc)" class="heading-menu__close" data-heading-menu-close="" href="#" title="Toggle contents (Esc)">X<span class="keyboard-hint"> (Esc)</span></a></div><nav aria-label="Article headings" class="heading-menu__nav"><ul class="heading-menu__tree"><li class="heading-menu__item"><div class="heading-menu__row"><button aria-controls="heading-menu-branch-1" aria-expanded="false" aria-label="Expand Gestão de resíduos" class="heading-menu__branch-toggle" data-heading-branch-toggle="" data-heading-depth="0" type="button">▾</button><a class="heading-menu__link" data-heading-label-toggle="" href="#gestao-de-residuos">Gestão de resíduos</a><div aria-label="Expand Gestão de resíduos levels" class="heading-menu__root-levels" data-heading-root-maximum="2" role="group"><button aria-controls="heading-menu-branch-1" aria-label="Show only Gestão de resíduos" aria-pressed="true" class="heading-menu__root-level-button" data-heading-root-level="0" type="button">0</button><button aria-controls="heading-menu-branch-1" aria-label="Show Gestão de resíduos through depth 1" aria-pressed="false" class="heading-menu__root-level-button" data-heading-root-level="1" type="button">1</button><button aria-controls="heading-menu-branch-1" aria-label="Show Gestão de resíduos through depth 2" aria-pressed="false" class="heading-menu__root-level-button" data-heading-root-level="2" type="button">2</button></div></div><ul hidden="" id="heading-menu-branch-1"><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#comida-para-galinhaspatos">Comida para galinhas/patos 🐔🦆</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#ossos-incluindo-espinhas-de-peixe">Ossos 🦴🦴, incluindo espinhas de peixe</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#residuos-compostaveis-que-os-animais-nao-comem">Resíduos compostáveis que os animais não comem</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#papel-higienico">Papel higiênico</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#plastico-papelao-isopor">Plástico, papelão, isopor</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#metal">Metal</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#vidro">Vidro</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#pilhas-baterias-lixo-eletronico-lixo-quimico">Pilhas, baterias, lixo eletrônico, lixo químico</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><button aria-controls="heading-menu-branch-2" aria-expanded="false" aria-label="Expand Discussão" class="heading-menu__branch-toggle" data-heading-branch-toggle="" data-heading-depth="1" type="button">▾</button><a class="heading-menu__link" data-heading-label-toggle="" href="#discussao">Discussão</a></div><ul hidden="" id="heading-menu-branch-2"><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#mas-queimar-plastico-e-bom">Mas queimar plástico é bom?</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#mas-depositar-lixo-no-lixao-entao-e-bom">Mas depositar lixo no lixão então é bom?</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#como-queimar-o-lixo">Como queimar o lixo</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#conclusao">Conclusão</a></div></li></ul></li><li class="heading-menu__item"><div class="heading-menu__row"><button aria-controls="heading-menu-branch-3" aria-expanded="false" aria-label="Expand Referências" class="heading-menu__branch-toggle" data-heading-branch-toggle="" data-heading-depth="1" type="button">▾</button><a class="heading-menu__link" data-heading-label-toggle="" href="#referencias">Referências</a></div><ul hidden="" id="heading-menu-branch-3"><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#oms_queima_2025-open-waste-burning-sectoral-solutions-for-air-pollution-and-health">[OMS_QUEIMA_2025] Open waste burning: sectoral solutions for air pollution and health</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#oms_residuos_2025-throwing-away-our-health-the-impacts-of-solid-waste-on-human-health-evidence-knowledge-gaps-and-health-sector-responses">[OMS_RESIDUOS_2025] Throwing away our health: the impacts of solid waste on human health – evidence, knowledge gaps and health sector responses</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#oms_dioxinas_2026-dioxins">[OMS_DIOXINAS_2026] Dioxins</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#reyna_bensusan_2018-uncontrolled-burning-of-solid-waste-by-households-in-mexico-is-a-significant-contributor-to-climate-change-in-the-country">[REYNA_BENSUSAN_2018] Uncontrolled burning of solid waste by households in Mexico is a significant contributor to climate change in the country</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#reyna_bensusan_2019-experimental-measurements-of-black-carbon-emission-factors-to-estimate-the-global-impact-of-uncontrolled-burning-of-waste">[REYNA_BENSUSAN_2019] Experimental measurements of black carbon emission factors to estimate the global impact of uncontrolled burning of waste</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#gomez_sanabria_2022-potential-for-future-reductions-of-global-ghg-and-air-pollutants-from-circular-waste-management-systems">[GOMEZ_SANABRIA_2022] Potential for future reductions of global GHG and air pollutants from circular waste management systems</a></div></li></ul></li></ul></li><li class="heading-menu__item"><div class="heading-menu__row"><button aria-controls="heading-menu-branch-4" aria-expanded="false" aria-label="Expand 🤖 〰〰〰〰 (1)" class="heading-menu__branch-toggle" data-heading-branch-toggle="" data-heading-depth="0" type="button">▾</button><button class="heading-menu__label" data-heading-label-toggle="" type="button">🤖 〰〰〰〰 (1)</button><div aria-label="Expand 🤖 〰〰〰〰 (1) levels" class="heading-menu__root-levels" data-heading-root-maximum="1" role="group"><button aria-controls="heading-menu-branch-4" aria-label="Show only 🤖 〰〰〰〰 (1)" aria-pressed="true" class="heading-menu__root-level-button" data-heading-root-level="0" type="button">0</button><button aria-controls="heading-menu-branch-4" aria-label="Show 🤖 〰〰〰〰 (1) through depth 1" aria-pressed="false" class="heading-menu__root-level-button" data-heading-root-level="1" type="button">1</button></div></div><ul hidden="" id="heading-menu-branch-4"><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#llm-1">[OMS_QUEIMA_2025] Open waste burning: sectoral solutions...</a></div></li></ul></li></ul></nav></aside><a aria-controls="article-heading-menu" aria-expanded="false" aria-keyshortcuts="c" aria-label="Expand contents" class="heading-menu__open no-print" data-heading-menu-open="" href="#article-heading-menu">☰</a>
+<div class="reader-controls no-print" role="group" aria-label="Reading options"><button class="theme-option no-print" type="button"
+  data-reader-option="theme:dark" data-reader-group="theme"
+  data-reader-value="dark" aria-label="Switch to dark mode" title="Switch to dark mode"
+  aria-pressed="true"><span aria-hidden="true">☾</span></button>
+<button class="theme-option no-print" type="button"
+  data-reader-option="theme:light" data-reader-group="theme"
+  data-reader-value="light" aria-label="Switch to light mode" title="Switch to light mode"
+  aria-pressed="false"><span aria-hidden="true">☀</span></button>
+<button class="image-layout-option no-print" type="button"
+  data-reader-option="image-layout:thumbnails" data-reader-group="image-layout"
+  data-reader-value="thumbnails" aria-label="Use image thumbnails" title="Use image thumbnails"
+  aria-pressed="true"><span aria-hidden="true">Thumbnails</span></button>
+<button class="image-layout-option no-print" type="button"
+  data-reader-option="image-layout:two-thirds" data-reader-group="image-layout"
+  data-reader-value="two-thirds" aria-label="Use images at 67% width" title="Use images at 67% width"
+  aria-pressed="false"><span aria-hidden="true">67%</span></button>
+<button class="image-layout-option no-print" type="button"
+  data-reader-option="image-layout:figures" data-reader-group="image-layout"
+  data-reader-value="figures" aria-label="Use images at 100% width" title="Use images at 100% width"
+  aria-pressed="false"><span aria-hidden="true">100%</span></button></div>
+<main>
+  <nav aria-label="Table of contents" class="print-toc"><p class="print-toc__title">Contents</p><ul class="print-toc__tree"><li class="print-toc__item"><a class="print-toc__link" href="#gestao-de-residuos">Gestão de resíduos</a><ul><li class="print-toc__item"><a class="print-toc__link" href="#comida-para-galinhaspatos">Comida para galinhas/patos 🐔🦆</a></li><li class="print-toc__item"><a class="print-toc__link" href="#ossos-incluindo-espinhas-de-peixe">Ossos 🦴🦴, incluindo espinhas de peixe</a></li><li class="print-toc__item"><a class="print-toc__link" href="#residuos-compostaveis-que-os-animais-nao-comem">Resíduos compostáveis que os animais não comem</a></li><li class="print-toc__item"><a class="print-toc__link" href="#papel-higienico">Papel higiênico</a></li><li class="print-toc__item"><a class="print-toc__link" href="#plastico-papelao-isopor">Plástico, papelão, isopor</a></li><li class="print-toc__item"><a class="print-toc__link" href="#metal">Metal</a></li><li class="print-toc__item"><a class="print-toc__link" href="#vidro">Vidro</a></li><li class="print-toc__item"><a class="print-toc__link" href="#pilhas-baterias-lixo-eletronico-lixo-quimico">Pilhas, baterias, lixo eletrônico, lixo químico</a></li><li class="print-toc__item"><a class="print-toc__link" href="#discussao">Discussão</a><ul><li class="print-toc__item"><a class="print-toc__link" href="#mas-queimar-plastico-e-bom">Mas queimar plástico é bom?</a></li><li class="print-toc__item"><a class="print-toc__link" href="#mas-depositar-lixo-no-lixao-entao-e-bom">Mas depositar lixo no lixão então é bom?</a></li><li class="print-toc__item"><a class="print-toc__link" href="#como-queimar-o-lixo">Como queimar o lixo</a></li><li class="print-toc__item"><a class="print-toc__link" href="#conclusao">Conclusão</a></li></ul></li><li class="print-toc__item"><a class="print-toc__link" href="#referencias">Referências</a><ul><li class="print-toc__item"><a class="print-toc__link" href="#oms_queima_2025-open-waste-burning-sectoral-solutions-for-air-pollution-and-health">[OMS_QUEIMA_2025] Open waste burning: sectoral solutions for air pollution and health</a></li><li class="print-toc__item"><a class="print-toc__link" href="#oms_residuos_2025-throwing-away-our-health-the-impacts-of-solid-waste-on-human-health-evidence-knowledge-gaps-and-health-sector-responses">[OMS_RESIDUOS_2025] Throwing away our health: the impacts of solid waste on human health – evidence, knowledge gaps and health sector responses</a></li><li class="print-toc__item"><a class="print-toc__link" href="#oms_dioxinas_2026-dioxins">[OMS_DIOXINAS_2026] Dioxins</a></li><li class="print-toc__item"><a class="print-toc__link" href="#reyna_bensusan_2018-uncontrolled-burning-of-solid-waste-by-households-in-mexico-is-a-significant-contributor-to-climate-change-in-the-country">[REYNA_BENSUSAN_2018] Uncontrolled burning of solid waste by households in Mexico is a significant contributor to climate change in the country</a></li><li class="print-toc__item"><a class="print-toc__link" href="#reyna_bensusan_2019-experimental-measurements-of-black-carbon-emission-factors-to-estimate-the-global-impact-of-uncontrolled-burning-of-waste">[REYNA_BENSUSAN_2019] Experimental measurements of black carbon emission factors to estimate the global impact of uncontrolled burning of waste</a></li><li class="print-toc__item"><a class="print-toc__link" href="#gomez_sanabria_2022-potential-for-future-reductions-of-global-ghg-and-air-pollutants-from-circular-waste-management-systems">[GOMEZ_SANABRIA_2022] Potential for future reductions of global GHG and air pollutants from circular waste management systems</a></li></ul></li></ul></li><li class="print-toc__item"><span class="print-toc__label">🤖 〰〰〰〰 (1)</span><ul><li class="print-toc__item"><a class="print-toc__link" href="#llm-1">[OMS_QUEIMA_2025] Open waste burning: sectoral solutions...</a></li></ul></li></ul></nav>
+  <article class="markdown-body">
+  <p class="convnote">Converted from gestao_de_residuos.md in 2026-10-19 19:13:56</p><section class="word-cloud" data-word-cloud="frequency" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="word-cloud-details" aria-label="Word cloud"><div class="word-cloud__words"><span class="word-cloud__word" data-count="17" style="font-size:2.400rem">não</span>
+<span class="word-cloud__word" data-count="13" style="font-size:2.104rem">lixo</span>
+<span class="word-cloud__word" data-count="11" style="font-size:1.939rem">resíduos</span>
+<span class="word-cloud__word" data-count="10" style="font-size:1.850rem">oms</span>
+<span class="word-cloud__word" data-count="10" style="font-size:1.850rem">queima</span>
+<span class="word-cloud__word" data-count="9" style="font-size:1.757rem">health</span>
+<span class="word-cloud__word" data-count="9" style="font-size:1.757rem">plástico</span>
+<span class="word-cloud__word" data-count="9" style="font-size:1.757rem">página</span>
+<span class="word-cloud__word" data-count="8" style="font-size:1.659rem">pdf</span>
+<span class="word-cloud__word" data-count="6" style="font-size:1.442rem">completo</span>
+<span class="word-cloud__word" data-count="6" style="font-size:1.442rem">queimar</span>
+<span class="word-cloud__word" data-count="6" style="font-size:1.442rem">waste</span>
+<span class="word-cloud__word" data-count="5" style="font-size:1.320rem">carbono</span>
+<span class="word-cloud__word" data-count="5" style="font-size:1.320rem">lixão</span>
+<span class="word-cloud__word" data-count="5" style="font-size:1.320rem">negro</span>
+<span class="word-cloud__word" data-count="5" style="font-size:1.320rem">parte</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">artigo</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">bensusan</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">burning</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">cinza</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">comida</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">composteira</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">dioxinas</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">papel</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">passos</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">quantidade</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">reyna</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">separar</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">substâncias</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">vezes</span>
+<span class="word-cloud__word" data-count="4" style="font-size:1.185rem">vidro</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">aberto</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">air</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">cerca</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">comem</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">céu</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">dentro</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">dois</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">eletrônico</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">equivalentes</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">global</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">higiênico</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">horizonte</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">latão</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">material</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">metais</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">metal</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">obs</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">organization</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">queimados</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">revista</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">sólidos</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">vai</span>
+<span class="word-cloud__word" data-count="3" style="font-size:1.032rem">world</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">animais</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">anos</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">apresenta</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">balde</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">baterias</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">biodegradáveis</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">bom</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">cachorro</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">cancerígenas</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">casca</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">climático</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">coletados</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">college</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">david</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">depois</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">depositar</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">deposição</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">descreve</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">desenvolvimento</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">dez</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">ecológico</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">effects</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">engasga</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">etc</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">evidências</span>
+<span class="word-cloud__word" data-count="2" style="font-size:0.850rem">exposição</span></div></section><div class="text-boundary" role="separator" aria-label="Begin text"><span>///// BEGIN text /////</span><span aria-hidden="true">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span></div><header class="article-header"><img alt="" class="article-header__logo" src="gestao_de_residuos.logo.png" title="gestao_de_residuos.logo.png"/><h1 id="gestao-de-residuos">Gestão de resíduos</h1></header>
+<!-- references: off -->
+<blockquote>
+<p>A utopia está lá no horizonte. Me aproximo dois passos, ela se afasta dois passos. Caminho dez passos e o horizonte corre dez passos. Por mais que eu caminhe, jamais alcançarei. Para que serve a utopia? Serve para isso: para que eu não deixe de caminhar.</p>
+<p>– Eduardo Galeano</p>
+</blockquote>
+<h2 id="comida-para-galinhaspatos">Comida para galinhas/patos 🐔🦆</h2>
+<p><strong>Juntar no balde e esvaziá-lo diariamente</strong></p>
+<div class="terminal-comment">//  <strong>OBS</strong>:
+//
+//  - Eles adoram espinha de peixe 🐟🦴
+//  - Eles també comem <strong>casca de ovo</strong></div>
+<div class="media-grid"><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="Comida para o galinheiro" type="button"><img alt="Comida para o galinheiro" decoding="async" loading="lazy" src="008__img_2_30.jpg" title="008__img_2_30.jpg"/></button><figcaption><em>Comida para o galinheiro</em></figcaption></figure></div>
+<h2 id="ossos-incluindo-espinhas-de-peixe">Ossos 🦴🦴, incluindo espinhas de peixe</h2>
+<p><strong>Dar para os cachorros</strong> 🐶</p>
+<p>Alguém disse:</p>
+<blockquote>
+<p>Cachorro de pobre <big>não engasga</big>, só engasga é cachorro de rico.</p>
+</blockquote>
+<h2 id="residuos-compostaveis-que-os-animais-nao-comem">Resíduos compostáveis que os animais não comem</h2>
+<p>A maioria dos resíduos orgânicos servem de comida, mas nem todos. Há uma composteira à parte feita somente para</p>
+<ul>
+<li>borra de café</li>
+<li>casca de limão/laranja</li>
+<li>…</li>
+<li>quantidade limitada de papel e papelão</li>
+</ul>
+<div class="media-grid"><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="Composteira para restos de comida que as galinhas/patos não comem" type="button"><img alt="Composteira para restos de comida que as galinhas/patos não comem" decoding="async" loading="lazy" src="010__img_8_22.jpg" title="010__img_8_22.jpg"/></button><figcaption><em>Composteira para restos de comida que as galinhas/patos não comem</em></figcaption></figure></div>
+<h2 id="papel-higienico">Papel higiênico</h2>
+<p><strong>Compostar à parte</strong> em uma composteira feita somente para isso.</p>
+<div class="terminal-comment">// <strong>OBS:</strong> No banheiro precisa haver instruções e dois cestos para separar papel higiênico de outros resíduos</div>
+<div class="media-grid"><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="Composteira apenas para papel higiênico." type="button"><img alt="Composteira apenas para papel higiênico." decoding="async" loading="lazy" src="img.png" title="img.png"/></button><figcaption><em>Composteira apenas para papel higiênico.</em></figcaption></figure></div>
+<h2 id="plastico-papelao-isopor">Plástico, papelão, isopor</h2>
+<p><strong>Separar no balde de lixo seco</strong>. <big><big>Lavar bem e por pra secar para não ficar cheirando mal.</big></big></p>
+<p>Quando acumula certa quantidade, esse lixo é queimado 🔥🔥🔥.</p>
+<div class="terminal-comment">//  <strong>OBS</strong>: para reduzir a quantidade de material queimado,
+//
+//  - tente reaproveitar sacos/sacolas
+//  - boa parte dos plásticos podem ser usados pra fazer o “tijolo ecológico”</div>
+<div class="media-grid"><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="Lixo para queimar" type="button"><img alt="Lixo para queimar" decoding="async" loading="lazy" src="007__img_1_34.jpg" title="007__img_1_34.jpg"/></button><figcaption><em>Lixo para queimar</em></figcaption></figure><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="Lavando e guardando sacolas de plástico sujas." type="button"><img alt="Lavando e guardando sacolas de plástico sujas." decoding="async" loading="lazy" src="012__img_94.jpg" title="012__img_94.jpg"/></button><figcaption><em>Lavando e guardando sacolas de plástico sujas.</em></figcaption></figure><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="O tal do “tijolo ecológico”" type="button"><img alt="O tal do “tijolo ecológico”" decoding="async" loading="lazy" src="011__img_93.jpg" title="011__img_93.jpg"/></button><figcaption><em>O tal do “tijolo ecológico”</em></figcaption></figure></div>
+<h2 id="metal">Metal</h2>
+<p><strong>Separar à parte</strong> (não misturar com plástico).</p>
+<p>Levar para ❓</p>
+<div class="media-grid"><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="Cesto para metal" type="button"><img alt="Cesto para metal" decoding="async" loading="lazy" src="006__img_83.jpg" title="006__img_83.jpg"/></button><figcaption><em>Cesto para metal</em></figcaption></figure></div>
+<h2 id="vidro">Vidro</h2>
+<p><strong>Lavar e guardar</strong> vidros.</p>
+<p><big><strong>Vidro quebrado</strong></big> é enterrado em um local designado.</p>
+<div class="media-grid"><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="Armazenamento temporário de vidro quebrado" type="button"><img alt="Armazenamento temporário de vidro quebrado" decoding="async" loading="lazy" src="img_1.png" title="img_1.png"/></button><figcaption><em>Armazenamento temporário de vidro quebrado</em></figcaption></figure></div>
+<h2 id="pilhas-baterias-lixo-eletronico-lixo-quimico">Pilhas, baterias, lixo eletrônico, lixo químico</h2>
+<p><strong>Separar à parte</strong> (não misturar com plástico).</p>
+<p>Levar para ❓</p>
+<aside angry="angry">
+<p><span class="aside-opening-word"><span class="aside-initial" data-text-fragment="">P</span>ilhas</span>, baterias, lixo eletrônico, restos de tinta e lixo químico em geral realmente não podem ser queimados!</p>
+<p>☣️☣️☣️ ⚗️🔋📺🎨🧪️ ☣️☣️☣️</p>
+</aside>
+<hr/>
+<h2 id="discussao">Discussão</h2>
+<h3 id="mas-queimar-plastico-e-bom">Mas queimar plástico é bom?</h3>
+<p><big><big><strong>Não é</strong>.</big></big> A queima gera substâncias químicas muito piores que a deposição de plástico em lixão.</p>
+<p>Não é só o plástico, mas também os aditivos que ele contém. Por exemplo, retardantes de chama, pigmentos etc. Estes costumam gerar substâncias altamente cancerígenas quando oxidados pela queima.</p>
+<p>A fumaça e cinza são muito tóxicas, contendo substâncias irritantes, cancerígenas, que e causam uma variedade de doenças e prejudicam o desenvolvimento dos bebês. <a href="#ref-oms-queima-2025">[OMS_QUEIMA_2025]</a> <a href="#ref-oms-residuos-2025">[OMS_RESIDUOS_2025]</a> <a href="#ref-oms-dioxinas-2026">[OMS_DIOXINAS_2026]</a> </p>
+<p>Além disso, a fumaça é uma das causas mundiais do efeito estufa. <a href="#ref-reyna-bensusan-2018">[REYNA_BENSUSAN_2018]</a> <a href="#ref-reyna-bensusan-2019">[REYNA_BENSUSAN_2019]</a></p>
+<p>Estima-se que, em 2015, cerca de 16% dos resíduos sólidos municipais gerados no mundo tenham sido queimados a céu aberto. <a href="#ref-gomez-sanabria-2022">[GOMEZ_SANABRIA_2022]</a></p>
+<h3 id="mas-depositar-lixo-no-lixao-entao-e-bom">Mas depositar lixo no lixão então é bom?</h3>
+<p><big><big><strong>Também não é</strong>.</big></big> O plástico leva centenas de anos para se decompor. Microplástico contamina os ecossistemas, entra na cadeia alimentar e vai parar dentro do nosso corpo, causando também uma série de problemas.</p>
+<p>Lixo eletrônico, metais, tintas etc. também soltam substâncias prejudiciais no chorume que sai do lixão.</p>
+<p>A questão aqui é a de escolher o <big><big>“menos pior️”</big></big>, e as evidências apontam que depositar o lixo em um lixão é “menos pior” do que queimá-lo. </p>
+<p>Não é por acaso que a queima do lixo é crime ambiental na maioria dos países.</p>
+<h3 id="como-queimar-o-lixo">Como queimar o lixo</h3>
+<p>Se realmente vai queimar plástico, então o faça dentro de um latão, pelo menos para que a cinza não vá para a terra.</p>
+<p>Não adianta tentar queimar metal ou vidro; só vai fazer volume na cinza depois.</p>
+<p>Depois de queimar, tampe o latão para que não chova dentro.</p>
+<div class="media-grid"><figure class="media-item"><button aria-label="Open image" class="media-open" data-viewer-caption="Queimando o lixo em um latão para confinar a cinza tóxica." type="button"><img alt="Queimando o lixo em um latão para confinar a cinza tóxica." decoding="async" loading="lazy" src="017__img_8_17.jpg" title="017__img_8_17.jpg"/></button><figcaption><em>Queimando o lixo em um latão para confinar a cinza tóxica.</em></figcaption></figure></div>
+<h3 id="conclusao">Conclusão</h3>
+<aside happy="happy" neutral="neutral">
+<p><span class="aside-opening-word"><span class="aside-initial" data-text-fragment="">E</span>ste</span> texto foi montado a partir da observação das práticas existentes, com algumas mudanças. Pelos lugares por onde passamos, muitas vezes precisamos trazer, melhorar ou inventar novas soluções para a gestão de resíduos. Penso que qualquer tempo investido para pensar neste assunto tão importante é um grande ato de amor à vida e ao planeta 💙💚🤎.</p>
+</aside>
+<h2 id="referencias">Referências</h2>
+<aside id="llm-1" llm="llm">
+<p class="llm-marker"><span class="llm-robot">🤖</span> 〰〰〰〰</p><p><a id="ref-oms-queima-2025"></a></p>
+<h3 id="oms_queima_2025-open-waste-burning-sectoral-solutions-for-air-pollution-and-health">[OMS_QUEIMA_2025] <em>Open waste burning: sectoral solutions for air pollution and health</em></h3>
+<p>World Health Organization. 17 jul. 2025.</p>
+<p><a href="https://iris.who.int/server/api/core/bitstreams/d48057b3-8ba2-4cbc-8e1b-ff4c2724f8ce/content#page=3" rel="noopener noreferrer" target="_blank">PDF completo — OMS</a>. <a href="https://www.who.int/publications/i/item/B09367" rel="noopener noreferrer" target="_blank">Publicação na OMS</a>.</p>
+<ul>
+<li>Nas páginas 3–4, “Air pollutants and their health effects” enumera material particulado, carbono negro, metais pesados, dioxinas, furanos e hidrocarbonetos aromáticos policíclicos liberados pela queima aberta. Descreve irritação, problemas respiratórios e associações da exposição prolongada com desfechos adversos no nascimento.</li>
+<li>Na página 4, “Regulations for open waste burning” cita um levantamento de 2021 que identificou 94 países que regulamentavam a queima, dos quais 38 tinham regras estritas.</li>
+</ul>
+<p><a id="ref-oms-residuos-2025"></a></p>
+<h3 id="oms_residuos_2025-throwing-away-our-health-the-impacts-of-solid-waste-on-human-health-evidence-knowledge-gaps-and-health-sector-responses">[OMS_RESIDUOS_2025] <em>Throwing away our health: the impacts of solid waste on human health – evidence, knowledge gaps and health sector responses</em></h3>
+<p>World Health Organization. 2025.</p>
+<p><a href="https://cdn.who.int/media/docs/default-source/wash-documents/throwing-away-our-health-19-dec-25.pdf?sfvrsn=1c0ffac2_3#page=38" rel="noopener noreferrer" target="_blank">PDF completo — OMS, página 28 impressa / 38 do arquivo</a></p>
+<ul>
+<li>Na seção 5.3.3, página 28, relata que metais tóxicos presentes no material particulado da queima a céu aberto na Índia foram associados a riscos estimados de câncer várias vezes acima dos níveis aceitáveis. O trecho remete ao estudo de Peter, Shiva Nagendra e Nambi (2018), referência 207 do relatório.</li>
+</ul>
+<p><a id="ref-oms-dioxinas-2026"></a></p>
+<h3 id="oms_dioxinas_2026-dioxins">[OMS_DIOXINAS_2026] <em>Dioxins</em></h3>
+<p>World Health Organization. 11 ago. 2026.</p>
+<p><a href="https://www.who.int/news-room/fact-sheets/detail/dioxins-and-their-effects-on-human-health" rel="noopener noreferrer" target="_blank">Texto completo — OMS</a></p>
+<ul>
+<li>“Sources of contamination” identifica a incineração não controlada de resíduos sólidos e hospitalares como fonte importante de liberação de dioxinas devido à combustão incompleta.</li>
+<li>“Effects on human health” apresenta a classificação da TCDD pela IARC como carcinógeno humano conhecido, com base em evidências em animais e seres humanos. Também descreve efeitos sobre os sistemas imunológico, nervoso em desenvolvimento, endócrino e reprodutivo, destacando a sensibilidade do feto à exposição.</li>
+</ul>
+<p><a id="ref-reyna-bensusan-2018"></a></p>
+<h3 id="reyna_bensusan_2018-uncontrolled-burning-of-solid-waste-by-households-in-mexico-is-a-significant-contributor-to-climate-change-in-the-country">[REYNA_BENSUSAN_2018] <em>Uncontrolled burning of solid waste by households in Mexico is a significant contributor to climate change in the country</em></h3>
+<p>Natalia Reyna-Bensusan; David C. Wilson; Stephen R. Smith. <em>Environmental Research</em>, 163, 280–288. Maio 2018.</p>
+<p><a href="https://spiral.imperial.ac.uk/server/api/core/bitstreams/f4ab000a-6c50-4946-8e29-fefd5bfb0026/content" rel="noopener noreferrer" target="_blank">PDF completo — Imperial College London</a>. <a href="https://doi.org/10.1016/j.envres.2018.01.042" rel="noopener noreferrer" target="_blank">Artigo na revista</a>. <a href="https://pubmed.ncbi.nlm.nih.gov/29482066/" rel="noopener noreferrer" target="_blank">Resumo no PubMed</a>.</p>
+<ul>
+<li>O resumo, na primeira página do PDF, apresenta uma comparação para Huejutla de Reyes, no México. O impacto climático calculado do carbono negro emitido pela queima doméstica foi <strong>15 vezes</strong> maior que o do metano potencialmente liberado pela deposição de quantidades equivalentes de resíduos combustíveis biodegradáveis no lixão oficial.</li>
+</ul>
+<p><a id="ref-reyna-bensusan-2019"></a></p>
+<h3 id="reyna_bensusan_2019-experimental-measurements-of-black-carbon-emission-factors-to-estimate-the-global-impact-of-uncontrolled-burning-of-waste">[REYNA_BENSUSAN_2019] <em>Experimental measurements of black carbon emission factors to estimate the global impact of uncontrolled burning of waste</em></h3>
+<p>Natalia Reyna-Bensusan; David C. Wilson; Pamela M. Davy; Gary W. Fuller; Geoff D. Fowler; Stephen R. Smith. <em>Atmospheric Environment</em>, 213, 629–639. 15 set. 2019.</p>
+<p><a href="https://spiral.imperial.ac.uk/server/api/core/bitstreams/aff02fab-e99d-47d3-8857-4d4f9baaf9f6/content#page=19" rel="noopener noreferrer" target="_blank">PDF completo — Imperial College London, página 19</a>. <a href="https://doi.org/10.1016/j.atmosenv.2019.06.047" rel="noopener noreferrer" target="_blank">Artigo na revista</a>.</p>
+<ul>
+<li>Na seção 3.4 e na Tabela 7, página 19 do PDF, o impacto climático global estimado do carbono negro da queima foi aproximadamente 2–8 vezes o do metano da disposição de quantidades equivalentes de resíduos biodegradáveis em aterros/lixões, com média de 3,5. O cálculo adota um horizonte de 20 anos para o carbono negro.</li>
+<li>Nas conclusões, página 20 do PDF, PET e poliestireno se destacam como fontes de carbono negro, chegando juntos a cerca de 90% das emissões nas misturas analisadas. Isso fundamenta a atenção à separação e coleta desses plásticos.</li>
+</ul>
+<p><a id="ref-gomez-sanabria-2022"></a></p>
+<h3 id="gomez_sanabria_2022-potential-for-future-reductions-of-global-ghg-and-air-pollutants-from-circular-waste-management-systems">[GOMEZ_SANABRIA_2022] <em>Potential for future reductions of global GHG and air pollutants from circular waste management systems</em></h3>
+<p>Adriana Gómez-Sanabria; Gregor Kiesewetter; Zbigniew Klimont; Wolfgang Schoepp; Helmut Haberl. <em>Nature Communications</em>, 13, artigo 106. 10 jan. 2022.</p>
+<p><a href="https://www.nature.com/articles/s41467-021-27624-7.pdf#page=4" rel="noopener noreferrer" target="_blank">PDF completo — Nature, página 4</a>. <a href="https://doi.org/10.1038/s41467-021-27624-7" rel="noopener noreferrer" target="_blank">Artigo na revista</a>.</p>
+<ul>
+<li>Na página 4, estima que cerca de <strong>16% dos resíduos sólidos municipais gerados mundialmente foram queimados a céu aberto</strong> em 2010 e 2015, equivalentes a 380 e 394 milhões de toneladas por ano, respectivamente.</li>
+<li>Da quantidade queimada, 55% correspondia a resíduos coletados e 45% a não coletados.</li>
+</ul>
+</aside><div class="text-boundary" role="separator" aria-label="End text"><span>///// END text /////</span><span aria-hidden="true">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span></div>
+  </article>
+</main>
+<dialog class="reader-dialog word-cloud-details" id="word-cloud-details" data-dialog data-word-cloud-details aria-labelledby="word-cloud-details-title">
+  <div class="reader-dialog__panel">
+    <header class="reader-dialog__header">
+      <h2 class="reader-dialog__title" id="word-cloud-details-title">Word cloud details</h2>
+      <button type="button" class="reader-dialog__button reader-dialog__close" data-dialog-close aria-label="Close" aria-keyshortcuts="Escape">X<span class="keyboard-hint"> (Esc)</span></button>
+    </header>
+    <div class="reader-dialog__content word-cloud-details__body" data-dialog-scroll data-dialog-initial-focus tabindex="-1"><p class="word-cloud-details__summary" data-word-cloud-summary></p>
+    <table class="word-cloud-details__table">
+      <thead><tr><th scope="col">Word</th><th scope="col">Count</th><th scope="col" aria-label="Frequency relative to highest count">Bar</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="reader-dialog__shortcuts">Scroll: PgUp / PgDn · Home / End</p>
+  </div>
+</dialog>
+<dialog class="reader-dialog image-viewer" id="image-viewer" data-dialog data-image-viewer aria-labelledby="image-viewer-title">
+  <div class="reader-dialog__panel">
+    <header class="reader-dialog__header">
+      <h2 class="reader-dialog__title" id="image-viewer-title">Image gallery</h2>
+      <button type="button" class="reader-dialog__button reader-dialog__close" data-dialog-close aria-label="Close" aria-keyshortcuts="Escape">X<span class="keyboard-hint"> (Esc)</span></button>
+    </header>
+    <div class="reader-dialog__content image-viewer__body"><div class="image-viewer__stage">
+    <button type="button" class="reader-dialog__button image-viewer__button image-viewer__prev" data-viewer-prev aria-label="Previous image" aria-keyshortcuts="ArrowLeft">◀</button>
+    <a class="image-viewer__link" target="_blank" rel="noopener noreferrer" aria-label="Open image in a new tab">
+      <img class="image-viewer__image" alt="">
+    </a>
+    <button type="button" class="reader-dialog__button image-viewer__button image-viewer__next" data-viewer-next aria-label="Next image" aria-keyshortcuts="ArrowRight">▶</button>
+    <div class="image-viewer__caption" aria-live="polite"></div>
+  </div></div>
+    
+  </div>
+</dialog>
+<script>
+window.readerDialogs = (() => {
+  const stack = [];
+  const controllers = new WeakMap();
+  const syncScroll = () => document.documentElement.classList.toggle('reader-dialog-open', stack.length > 0);
+
+  function register(dialog, {onClose = () => {}} = {}) {
+    if (controllers.has(dialog)) return controllers.get(dialog);
+    let opener = null;
+    const controller = {
+      open(trigger = document.activeElement) {
+        if (dialog.open) return;
+        opener = trigger;
+        dialog.showModal();
+        stack.push(dialog);
+        syncScroll();
+        (dialog.querySelector('[data-dialog-initial-focus]') ||
+          dialog.querySelector('[data-dialog-close]')).focus({preventScroll: true});
+      },
+      close() {
+        if (!dialog.open) return;
+        dialog.close();
+      },
+    };
+    dialog.addEventListener('close', () => {
+      const index = stack.indexOf(dialog);
+      if (index >= 0) stack.splice(index, 1);
+      syncScroll();
+      onClose();
+      if (opener?.isConnected && (!stack.length || stack.at(-1).contains(opener))) {
+        const focusTarget = opener;
+        setTimeout(() => focusTarget.focus({preventScroll: true}), 0);
+      }
+    });
+    dialog.addEventListener('cancel', event => {
+      event.preventDefault();
+      controller.close();
+    });
+    dialog.querySelector('[data-dialog-close]').addEventListener('click', controller.close);
+    let backdropPress = false;
+    dialog.addEventListener('pointerdown', event => { backdropPress = event.target === dialog; });
+    dialog.addEventListener('click', event => {
+      if (backdropPress && event.target === dialog) controller.close();
+      backdropPress = false;
+    });
+    controllers.set(dialog, controller);
+    return controller;
+  }
+
+  // Capture before page handlers, even when closing changes the active modal.
+  document.addEventListener('keydown', event => {
+    const dialog = stack.at(-1);
+    if (!dialog?.open) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (!event.repeat) controllers.get(dialog).close();
+      return;
+    }
+    if (event.key === 'Tab') {
+      const focusable = Array.from(dialog.querySelectorAll(
+        'button, a[href], input, select, textarea, [tabindex]'
+      )).filter(node => !node.disabled && node.tabIndex >= 0 && node.getClientRects().length);
+      const index = focusable.indexOf(document.activeElement);
+      if (index < 0 || (event.shiftKey ? index === 0 : index === focusable.length - 1)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        (event.shiftKey ? focusable.at(-1) : focusable[0])?.focus({preventScroll: true});
+      }
+      return;
+    }
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey ||
+        event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+    const shortcut = Array.from(dialog.querySelectorAll('button[aria-keyshortcuts]'))
+      .find(button => !button.disabled && button.getAttribute('aria-keyshortcuts') === event.key);
+    const scroll = dialog.querySelector('[data-dialog-scroll]');
+    const pageKeys = ['PageUp', 'PageDown', 'Home', 'End'];
+    if (!shortcut && !(scroll && pageKeys.includes(event.key))) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (shortcut) shortcut.click();
+    else if (event.key === 'Home') scroll.scrollTo({top: 0});
+    else if (event.key === 'End') scroll.scrollTo({top: scroll.scrollHeight});
+    else scroll.scrollBy({top: (event.key === 'PageDown' ? 1 : -1) * scroll.clientHeight * .9});
+  }, true);
+  return {register, get active() { return stack.at(-1) || null; }};
+})();
+</script>
+<script>
+(() => {
+  const cloud = document.querySelector('[data-word-cloud]');
+  const dialog = document.querySelector('[data-word-cloud-details]');
+  if (!cloud || !dialog) return;
+
+  const tbody = dialog.querySelector('tbody');
+  const summary = dialog.querySelector('[data-word-cloud-summary]');
+  const modal = window.readerDialogs.register(dialog);
+
+  const words = Array.from(cloud.querySelectorAll('.word-cloud__word'), node => ({
+    label: node.firstChild?.textContent?.trim() || '',
+    count: Number(node.dataset.count) || 0,
+    fontSize: node.style.fontSize,
+  }));
+  const maxCount = Math.max(...words.map(word => word.count));
+
+  for (const word of words) {
+    const row = tbody.insertRow();
+    const wordCell = row.insertCell();
+    wordCell.textContent = word.label;
+    wordCell.style.fontSize = word.fontSize;
+    row.insertCell().textContent = String(word.count);
+    const barCell = row.insertCell();
+    const track = document.createElement('span');
+    const bar = document.createElement('span');
+    const percentage = maxCount ? word.count / maxCount * 100 : 0;
+    track.className = 'word-cloud-details__bar-track';
+    track.setAttribute('aria-label', `${percentage.toFixed(1)}% of the highest count`);
+    bar.className = 'word-cloud-details__bar';
+    bar.style.width = `${percentage}%`;
+    track.append(bar);
+    barCell.append(track);
+  }
+  const wordCount = tbody.rows.length;
+  summary.textContent = `${wordCount} word${wordCount === 1 ? '' : 's'} shown`;
+
+  const openDialog = () => modal.open(cloud);
+  cloud.addEventListener('click', openDialog);
+  cloud.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openDialog();
+  });
+})();
+</script>
+<script>
+(function () {
+  const triggers = Array.from(document.querySelectorAll('.media-open'));
+  const viewer = document.querySelector('[data-image-viewer]');
+  if (!triggers.length || !viewer) return;
+
+  const imageLink = viewer.querySelector('.image-viewer__link');
+  const image = viewer.querySelector('.image-viewer__image');
+  const caption = viewer.querySelector('.image-viewer__caption');
+  const prevButton = viewer.querySelector('[data-viewer-prev]');
+  const nextButton = viewer.querySelector('[data-viewer-next]');
+  const modal = window.readerDialogs.register(viewer, {onClose() {
+    image.removeAttribute('src');
+    imageLink.removeAttribute('href');
+  }});
+  let currentIndex = 0;
+
+  function show(index) {
+    currentIndex = (index + triggers.length) % triggers.length;
+    const trigger = triggers[currentIndex];
+    const source = trigger.querySelector('img');
+    if (!source) return;
+    const imageSource = source.currentSrc || source.src;
+    image.src = imageSource;
+    image.alt = source.alt || '';
+    image.title = source.title;
+    imageLink.href = imageSource;
+    if (trigger.dataset.viewerCaption) {
+      caption.textContent = trigger.dataset.viewerCaption;
+      caption.dataset.empty = 'false';
+    } else {
+      caption.textContent = 'no caption';
+      caption.dataset.empty = 'true';
+    }
+  }
+
+  triggers.forEach(function (trigger, index) {
+    trigger.addEventListener('click', function () {
+      show(index);
+      modal.open(trigger);
+    });
+  });
+
+  prevButton.addEventListener('click', function () { show(currentIndex - 1); });
+  nextButton.addEventListener('click', function () { show(currentIndex + 1); });
+})();
+</script>
+
+<script>
+(function () {
+  const initials = [...document.querySelectorAll('.aside-initial')];
+  if (!initials.length) return;
+  const context = document.createElement('canvas').getContext('2d');
+  if (!context) return;
+
+  function ascent(text, style) {
+    context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    context.fontVariantCaps = style.fontVariantCaps;
+    context.fontKerning = style.fontKerning;
+    return context.measureText(text).actualBoundingBoxAscent;
+  }
+
+  function baselineProbe() {
+    const probe = document.createElement('span');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.style.cssText = 'display:inline-block;width:0;height:0;padding:0;margin:0;border:0;'
+      + 'font-size:0;line-height:0;vertical-align:baseline;';
+    return probe;
+  }
+
+  function measure() {
+    const probes = initials.filter(initial => initial.getClientRects().length).map(initial => {
+      const glyph = baselineProbe();
+      const line = baselineProbe();
+      initial.append(glyph);
+      initial.after(line);
+      return {initial, glyph, line};
+    });
+    try {
+      return probes.map(({initial, glyph, line}) => {
+        const initialStyle = getComputedStyle(initial);
+        const wordStyle = getComputedStyle(initial.parentElement);
+        const initialTop = glyph.getBoundingClientRect().top
+          - ascent(initial.textContent.toLocaleUpperCase(), initialStyle);
+        // Lowercase x becomes a small capital in the opening word's own font.
+        const wordTop = line.getBoundingClientRect().top - ascent('x', wordStyle);
+        return {initial, initialTop, wordTop, offset: wordTop - initialTop};
+      });
+    } finally {
+      probes.forEach(({glyph, line}) => { glyph.remove(); line.remove(); });
+    }
+  }
+
+  function align() {
+    initials.forEach(initial => initial.style.marginTop = '0px');
+    const measurements = measure();
+    measurements.forEach(({initial, offset}) => {
+      if (Number.isFinite(offset)) initial.style.marginTop = `${offset.toFixed(3)}px`;
+    });
+  }
+
+  let pending = 0;
+  function schedule() {
+    cancelAnimationFrame(pending);
+    pending = requestAnimationFrame(align);
+  }
+  window.readerInitials = {align, measure};
+  document.fonts.ready.then(align);
+  document.fonts.addEventListener('loadingdone', schedule);
+  window.addEventListener('resize', schedule);
+  window.addEventListener('beforeprint', align);
+  window.addEventListener('afterprint', schedule);
+  const article = document.querySelector('article.markdown-body');
+  if (article && window.ResizeObserver) {
+    let width = article.getBoundingClientRect().width;
+    new ResizeObserver(() => {
+      const nextWidth = article.getBoundingClientRect().width;
+      if (nextWidth !== width) { width = nextWidth; schedule(); }
+    }).observe(article);
+  }
+})();
+</script>
+
+<script>
+(function () {
+  const body = document.body;
+  const menu = document.querySelector('[data-heading-menu]');
+  const openButton = document.querySelector('[data-heading-menu-open]');
+  const closeButton = document.querySelector('[data-heading-menu-close]');
+  if (!menu || !openButton || !closeButton) return;
+
+  function selectAll(selector, root) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(selector));
+  }
+
+  const smallScreen = window.matchMedia('(max-width: 840px)');
+  const branchButtons = selectAll('[data-heading-branch-toggle]', menu);
+  const levelButtons = selectAll('[data-heading-menu-level]', menu);
+  const rootLevelButtons = selectAll('[data-heading-root-level]', menu);
+  const rootLevelGroups = selectAll('[data-heading-root-maximum]', menu);
+  const labelToggles = selectAll('[data-heading-label-toggle]', menu);
+
+  function setMenuExpanded(expanded, moveFocus) {
+    body.classList.toggle('heading-menu-collapsed', !expanded);
+    menu.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+    openButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    closeButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if (moveFocus) {
+      window.requestAnimationFrame(function () {
+        (expanded ? closeButton : openButton).focus();
+      });
+    }
+  }
+
+  openButton.addEventListener('click', function (event) {
+    event.preventDefault();
+    setMenuExpanded(true, true);
+  });
+  closeButton.addEventListener('click', function (event) {
+    event.preventDefault();
+    setMenuExpanded(false, true);
+  });
+
+  selectAll('.heading-menu__link', menu).forEach(function (link) {
+    link.addEventListener('click', function () {
+      if (smallScreen.matches) setMenuExpanded(false, false);
+    });
+  });
+
+  function setBranchExpanded(button, expanded) {
+    const childList = document.getElementById(button.getAttribute('aria-controls'));
+    if (!childList) return;
+    button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    button.setAttribute('aria-label', (expanded ? 'Collapse ' : 'Expand ') +
+      button.parentElement.querySelector('.heading-menu__link, .heading-menu__label').textContent.trim());
+    childList.hidden = !expanded;
+  }
+
+  function rootItemFor(element) {
+    let item = element.closest('.heading-menu__item');
+    while (item && item.parentElement &&
+      !item.parentElement.classList.contains('heading-menu__tree')) {
+      item = item.parentElement.closest('.heading-menu__item');
+    }
+    return item;
+  }
+
+  function clearGlobalLevelSelection() {
+    levelButtons.forEach(function (button) {
+      button.setAttribute('aria-pressed', 'false');
+    });
+  }
+
+  function setRootLevelSelection(rootItem, level) {
+    selectAll('[data-heading-root-level]', rootItem).forEach(function (button) {
+      button.setAttribute('aria-pressed',
+        Number(button.dataset.headingRootLevel) === level ? 'true' : 'false');
+    });
+  }
+
+  function clearRootLevelSelection(rootItem) {
+    selectAll('[data-heading-root-level]', rootItem).forEach(function (button) {
+      button.setAttribute('aria-pressed', 'false');
+    });
+  }
+
+  function toggleBranch(button) {
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    setBranchExpanded(button, !expanded);
+    clearGlobalLevelSelection();
+    const rootItem = rootItemFor(button);
+    if (rootItem) clearRootLevelSelection(rootItem);
+  }
+
+  function setExpansionLevel(level) {
+    branchButtons.forEach(function (button) {
+      const branchDepth = Number(button.dataset.headingDepth);
+      setBranchExpanded(button, branchDepth < level);
+    });
+    levelButtons.forEach(function (button) {
+      button.setAttribute('aria-pressed', Number(button.dataset.headingMenuLevel) === level ? 'true' : 'false');
+    });
+    rootLevelGroups.forEach(function (group) {
+      const rootItem = rootItemFor(group);
+      const rootMaximum = Number(group.dataset.headingRootMaximum);
+      if (rootItem) setRootLevelSelection(rootItem, Math.min(level, rootMaximum));
+    });
+  }
+
+  branchButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      toggleBranch(button);
+    });
+  });
+
+  labelToggles.forEach(function (label) {
+    label.addEventListener('click', function () {
+      const branchButton = label.parentElement.querySelector('[data-heading-branch-toggle]');
+      if (branchButton) toggleBranch(branchButton);
+    });
+  });
+
+  rootLevelButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      const level = Number(button.dataset.headingRootLevel);
+      const rootItem = rootItemFor(button);
+      if (!rootItem) return;
+      selectAll('[data-heading-branch-toggle]', rootItem).forEach(function (branchButton) {
+        const branchDepth = Number(branchButton.dataset.headingDepth);
+        setBranchExpanded(branchButton, branchDepth < level);
+      });
+      clearGlobalLevelSelection();
+      setRootLevelSelection(rootItem, level);
+    });
+  });
+
+  levelButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      setExpansionLevel(Number(button.dataset.headingMenuLevel));
+    });
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.defaultPrevented || event.repeat || window.readerDialogs?.active) return;
+    const target = event.target;
+    const isEditable = target && (target.isContentEditable ||
+      /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+    if (event.key.toLowerCase() === 'c' && !event.altKey && !event.ctrlKey &&
+        !event.metaKey && !event.shiftKey && !isEditable &&
+        body.classList.contains('heading-menu-collapsed')) {
+      setMenuExpanded(true, true);
+    } else if (event.key === 'Escape') {
+      setMenuExpanded(body.classList.contains('heading-menu-collapsed'), true);
+    }
+  });
+
+  setExpansionLevel(0);
+  setMenuExpanded(!smallScreen.matches, false);
+  body.classList.add('heading-menu-ready');
+})();
+</script>
+</body></html>
