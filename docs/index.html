@@ -67,8 +67,9 @@ th[data-k]::after{
 }
 .sticky{position:sticky; top:0; background:var(--bg); box-shadow:0 2px 0 0 var(--border);}
 
-.row-title a{ text-decoration:none; color:var(--accent); }
+.row-title a{ min-width:0; overflow-wrap:anywhere; text-decoration:none; color:var(--accent); }
 .row-title a:hover{ text-decoration:underline; }
+.row-path{overflow-wrap:anywhere;}
 .tree-entry{
   display:flex; min-width:0; align-items:flex-start; gap:7px;
   margin-left:calc(var(--tree-depth, 0) * 20px);
@@ -86,13 +87,35 @@ th[data-k]::after{
 .folder-row td{border-bottom-color:var(--muted);}
 .folder-row .folder-path{font-size:.86em;}
 
-.meta{color:var(--sub);}
+.meta{color:var(--sub); overflow-wrap:anywhere;}
 .dim{color:var(--muted);}
 .num{text-align:right;}
 #count{margin-left:8px; color:var(--sub);}
 tfoot td{padding-top:12px; color:var(--muted);}
 
 tr:hover{background:var(--hover);}
+
+@media (max-width:700px){
+  body{margin:12px;}
+  table,thead,tbody,tfoot{display:block;}
+  thead tr{display:flex; flex-wrap:wrap;}
+  th{padding:8px; font-size:12px;}
+  table[data-view="tree"] thead{display:none;}
+  tbody tr{
+    display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr);
+    padding:10px 0; border-bottom:1px solid var(--border);
+  }
+  tbody td{min-width:0; padding:3px 8px; border:0; overflow-wrap:anywhere;}
+  .row-title,.row-path{grid-column:1 / -1;}
+  .row-path{font-size:12px;}
+  td[data-label]{font-size:12px;}
+  td[data-label]::before{content:attr(data-label) " "; color:var(--muted);}
+  .tree-entry{margin-left:min(calc(var(--tree-depth,0) * 12px),25%);}
+  .tree-toggle{width:auto;}
+  .folder-count{flex-shrink:0;}
+  .folder-row td:empty{display:none;}
+  tfoot tr,tfoot td{display:block; padding-left:0; padding-right:0;}
+}
 
 /* Optional: faint horizontal “scanlines”. Comment out if you don’t like it. */
 body::before{
@@ -135,12 +158,12 @@ body::before{
 </tr>
 </thead>
 <tbody></tbody>
-<tfoot><tr><td colspan="4">Generated on 2026-10-20 17:14</td></tr></tfoot>
+<tfoot><tr><td colspan="4">Generated on 2026-11-06 13:34</td></tr></tfoot>
 </table>
 
 <script>
 // Raw JS braces are safe now because this is NOT a Python f-string.
-const DATA = [{"path": "dynamic/agrofloresta/agrofloresta0.html", "relpath": "dynamic/agrofloresta/agrofloresta0.html", "title": "Agrofloresta", "meta_description": null, "og_title": null, "headings": ["Agrofloresta", "Livros começados/terminados", "████ - ███████", "20260625", "20260626", "20260627"], "first_paragraph": "Converted from agrofloresta0.md in 2026-10-20 17:14:54", "top_keywords": ["não", "agrofloresta", "saf", "dia", "plantas", "irrigação", "mutirão", "água", "fazer", "mesmo", "depois", "cuidado"], "word_count": 5969, "size_bytes": 6142922, "mtime": 1792530895, "about": "Agrofloresta — Livros começados/terminados · [não, agrofloresta, saf, dia]"}, {"path": "dynamic/agrofloresta/gestao_de_residuos.html", "relpath": "dynamic/agrofloresta/gestao_de_residuos.html", "title": "Gestão de resíduos", "meta_description": null, "og_title": null, "headings": ["Gestão de resíduos", "O que fazer com …", "Recapitulando …", "Algumas ilustrações", "Discussão", "Referências"], "first_paragraph": "Converted from gestao_de_residuos.md in 2026-10-20 17:14:55", "top_keywords": ["resíduos", "não", "lixo", "plástico", "queima", "queimar", "oms", "health", "página", "fazer", "papel", "pdf"], "word_count": 998, "size_bytes": 162760, "mtime": 1792530895, "about": "Gestão de resíduos — O que fazer com … · [resíduos, não, lixo, plástico]"}];
+const DATA = [{"about": "Agrofloresta — 20260625 · [não, agrofloresta, saf, dia]", "first_paragraph": "Converted from agrofloresta0.md in 2026-11-06 13:34:44", "headings": ["Agrofloresta", "20260625", "20260626", "20260627", "20260628", "20260629"], "meta_description": null, "mtime": 1793986485, "og_title": null, "path": "dynamic/agrofloresta/agrofloresta0.html", "relpath": "dynamic/agrofloresta/agrofloresta0.html", "size_bytes": 7256572, "title": "Agrofloresta", "top_keywords": ["não", "agrofloresta", "saf", "dia", "plantas", "irrigação", "mutirão", "água", "mesmo", "fazer", "depois", "cuidado"], "word_count": 7039}, {"about": "Gestão de resíduos — O que fazer com … · [resíduos, não, lixo, plástico]", "first_paragraph": "Converted from gestao_de_residuos.md in 2026-11-06 09:09:28", "headings": ["Gestão de resíduos", "O que fazer com …", "Recapitulando …", "Algumas ilustrações", "Discussão", "Referências"], "meta_description": null, "mtime": 1793970568, "og_title": null, "path": "dynamic/agrofloresta/gestao_de_residuos.html", "relpath": "dynamic/agrofloresta/gestao_de_residuos.html", "size_bytes": 162770, "title": "Gestão de resíduos", "top_keywords": ["resíduos", "não", "lixo", "plástico", "queima", "queimar", "oms", "health", "página", "fazer", "papel", "pdf"], "word_count": 998}];
 const VIEW_STORAGE_KEY = 'autoblog-index-view-v1';
 const EXPANDED_STORAGE_KEY = 'autoblog-index-expanded-v1';
 const collator = new Intl.Collator(undefined, {numeric:true, sensitivity:'base'});
@@ -149,6 +172,9 @@ const tbody = table.querySelector('tbody');
 const q = document.getElementById('q');
 const count = document.getElementById('count');
 const treeActions = document.getElementById('tree-actions');
+const columnLabels = Object.fromEntries(
+  Array.from(table.querySelectorAll('th[data-k]'), th => [th.dataset.k, th.textContent.trim()])
+);
 
 function fmtDate(ts){try{return new Date(ts*1000).toISOString().slice(0,16).replace('T',' ')}catch(e){return ''}}
 function esc(value){
@@ -168,9 +194,9 @@ function pageRowHTML(row, depth=null){
     : `<div class="tree-entry" style="--tree-depth:${depth}"><span class="tree-leaf" aria-hidden="true">·</span>${pageLink(row)}</div>`;
   return `<tr>
     <td class="row-title">${title}</td>
-    <td class="dim">${esc(row.relpath||row.path)}</td>
-    <td>${fmtDate(row.mtime)}</td>
-    <td class="num">${row.word_count||0}</td>
+    <td class="dim row-path">${esc(row.relpath||row.path)}</td>
+    <td data-label="${esc(columnLabels.mtime)}">${fmtDate(row.mtime)}</td>
+    <td class="num" data-label="${esc(columnLabels.word_count)}">${row.word_count||0}</td>
   </tr>`;
 }
 
@@ -270,7 +296,7 @@ function folderRowHTML(node, depth, matchingFiles, expanded){
         <span class="folder-count">(${matchingFiles})</span>
       </button>
     </td>
-    <td class="dim folder-path">${esc(node.path)}/</td><td></td><td></td>
+    <td class="dim row-path folder-path">${esc(node.path)}/</td><td></td><td></td>
   </tr>`;
 }
 
