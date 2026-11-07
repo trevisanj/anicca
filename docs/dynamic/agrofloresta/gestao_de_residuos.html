@@ -7,6 +7,7 @@
 (function () {
   const root = document.documentElement;
   const preferences = [{"name": "theme", "storageKey": "autoblog.reader.theme.v1", "states": [{"value": "dark", "label": "Switch to dark mode", "icon": "☾"}, {"value": "light", "label": "Switch to light mode", "icon": "☀"}]}, {"name": "image-layout", "storageKey": "autoblog.reader.image-layout.v2", "states": [{"value": "thumbnails", "label": "Use image thumbnails", "icon": "Thumbnails"}, {"value": "two-thirds", "label": "Use images at 67% width", "icon": "67%"}, {"value": "figures", "label": "Use images at 100% width", "icon": "100%"}]}];
+  const bindings = [];
   preferences.forEach(function (preference) {
     const attribute = 'data-' + preference.name;
     let current = preference.states[0];
@@ -18,7 +19,7 @@
     }
     root.setAttribute(attribute, current.value);
 
-    document.addEventListener('DOMContentLoaded', function () {
+    bindings.push(function () {
       const buttons = Array.from(document.querySelectorAll('[data-reader-group="' + preference.name + '"]'));
       if (!buttons.length) return;
       function updateControls() {
@@ -42,6 +43,9 @@
       updateControls();
     });
   });
+  window.readerPreferences = {
+    bindControls() { bindings.splice(0).forEach(bind => bind()); },
+  };
 })();
 </script>
 <style>
@@ -145,7 +149,7 @@
   --anguish-initial-angry:#573a18;
   --anguish-link-angry:#174ea6;
 }
-:root { --heading-menu-width:300px; }
+:root { --heading-menu-width:300px; --reader-touch-target:44px; --reader-toolbar-height:64px; }
 * { box-sizing:border-box; }
 html,body { margin:0; padding:0; background:var(--bg); color:var(--fg); }
 body {
@@ -157,7 +161,7 @@ body.has-heading-menu {
 body.has-heading-menu.heading-menu-collapsed { grid-template-columns:0 minmax(0, 1fr); }
 main { max-width:1720px; margin:40px auto; padding:0 64px 0 16px; overflow-wrap:anywhere; }
 body.has-heading-menu > main { grid-column:2; grid-row:1; width:100%; }
-body.has-heading-menu.heading-menu-collapsed > main { margin-top:64px; }
+body.has-heading-menu.heading-menu-collapsed > main { margin-top:var(--reader-toolbar-height); }
 h1,h2,h3,h4,h5,h6 {
   color:var(--fg); margin:1.6em 0 .6em; letter-spacing:.3px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
@@ -1521,11 +1525,13 @@ button.heading-menu__label {
 .reader-controls {
   position:fixed; top:12px; right:12px; z-index:60;
   display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; max-width:calc(100vw - 24px);
+  pointer-events:none;
 }
 .reader-controls button {
   display:grid; place-items:center; min-width:42px; height:42px; padding:0 10px;
   color:var(--fg); background:var(--code-bg); border:1px solid var(--border);
   border-radius:0; cursor:pointer; font:1.25rem/1 system-ui,sans-serif;
+  pointer-events:auto; touch-action:manipulation;
 }
 .reader-controls .image-layout-option { font-size:.85rem; }
 .reader-controls button[aria-pressed="true"] {
@@ -1668,8 +1674,7 @@ button.heading-menu__label {
 
 /* -------- Mobile tweaks -------- */
 @media (max-width: 840px) {
-  .reader-controls { left:64px; right:8px; max-width:none; gap:4px; }
-  .reader-controls button { min-width:36px; padding-inline:7px; }
+  .reader-controls { right:8px; gap:4px; }
   .reader-controls [data-reader-group="image-layout"] { display:none; }
   .reader-dialog { padding:8px; }
   .reader-dialog__panel { gap:6px; }
@@ -1679,20 +1684,14 @@ button.heading-menu__label {
   body.has-heading-menu { display:block; }
   body.has-heading-menu > main { width:auto; }
   .heading-menu {
-    position:fixed; inset:0 auto 0 0; width:86vw; max-width:var(--heading-menu-width);
+    position:fixed; inset:var(--reader-toolbar-height) auto 0 0;
+    width:86vw; max-width:var(--heading-menu-width); height:auto;
     box-shadow:12px 0 30px rgba(0,0,0,.42);
   }
-  .heading-menu__close { min-height:44px; }
-  .heading-menu__levels { min-width:0; overflow-x:auto; }
-  .heading-menu__level-button { min-height:40px; }
-  .heading-menu__root-level-button { min-width:28px; min-height:36px; }
-  .heading-menu__row { grid-template-columns:36px minmax(0, 1fr) auto; }
-  .heading-menu__branch-toggle,
-  .heading-menu__branch-spacer { width:36px; min-height:40px; }
   body:not(.heading-menu-ready) .heading-menu:not(:target) { display:none; }
   body:not(.heading-menu-ready) .heading-menu__open { display:grid; }
   body:not(.heading-menu-ready) .heading-menu:target + .heading-menu__open { display:none; }
-  main { max-width:720px; margin:0 auto; padding:64px 16px 16px; }
+  main { max-width:720px; margin:0 auto; padding:var(--reader-toolbar-height) 16px 16px; }
   h1 { font-size:1.8rem; }
   .article-header { flex-direction:column; align-items:flex-start; gap:.75rem; }
   .article-header__logo { max-width:min(240px, 100%); }
@@ -1710,6 +1709,26 @@ button.heading-menu__label {
 }
 @media (pointer:coarse), (max-width: 840px) {
   .keyboard-hint, .reader-dialog__shortcuts { display:none; }
+  .reader-controls button,
+  .heading-menu__open,
+  .heading-menu__close,
+  .heading-menu__level-button,
+  .heading-menu__root-level-button,
+  .heading-menu__branch-toggle,
+  .heading-menu__branch-spacer {
+    min-width:var(--reader-touch-target); min-height:var(--reader-touch-target);
+  }
+  .heading-menu__header { display:grid; grid-template-columns:minmax(0, 1fr) auto; padding:8px; }
+  .heading-menu__close { grid-column:2; grid-row:1; margin:0; }
+  .heading-menu__levels { grid-column:1 / -1; grid-row:2; margin:0; }
+  .heading-menu__levels,
+  .heading-menu__root-levels { flex-wrap:wrap; gap:4px; }
+  .heading-menu__level-button,
+  .heading-menu__root-level-button { font-size:.9rem; }
+  .heading-menu__root-levels { grid-column:2 / -1; padding:0 0 8px; }
+  .heading-menu__row { grid-template-columns:var(--reader-touch-target) minmax(0, 1fr); }
+  .heading-menu__link,
+  .heading-menu__label { min-height:var(--reader-touch-target); display:flex; align-items:center; }
 }
 @media screen and (min-width: 841px) {
   :root[data-image-layout="figures"] .media-grid { display:block; }
@@ -1800,6 +1819,164 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </head>
 <body class="has-heading-menu">
 <aside aria-label="Table of contents" class="heading-menu no-print" data-heading-menu="" id="article-heading-menu"><div class="heading-menu__header"><p class="heading-menu__title">Contents</p><div aria-label="Expand heading levels" class="heading-menu__levels" role="group"><button aria-label="Show root nodes only" aria-pressed="true" class="heading-menu__level-button" data-heading-menu-level="0" type="button">0</button><button aria-label="Show Contents through depth 1" aria-pressed="false" class="heading-menu__level-button" data-heading-menu-level="1" type="button">1</button><button aria-label="Show Contents through depth 2" aria-pressed="false" class="heading-menu__level-button" data-heading-menu-level="2" type="button">2</button></div><a aria-controls="article-heading-menu" aria-expanded="true" aria-keyshortcuts="Escape" aria-label="Toggle contents (Esc)" class="heading-menu__close" data-heading-menu-close="" href="#" title="Toggle contents (Esc)">X<span class="keyboard-hint"> (Esc)</span></a></div><nav aria-label="Article headings" class="heading-menu__nav"><ul class="heading-menu__tree"><li class="heading-menu__item"><div class="heading-menu__row"><button aria-controls="heading-menu-branch-1" aria-expanded="false" aria-label="Expand Gestão de resíduos" class="heading-menu__branch-toggle" data-heading-branch-toggle="" data-heading-depth="0" type="button">▾</button><a class="heading-menu__link" data-heading-label-toggle="" href="#gestao-de-residuos">Gestão de resíduos</a><div aria-label="Expand Gestão de resíduos levels" class="heading-menu__root-levels" data-heading-root-maximum="2" role="group"><button aria-controls="heading-menu-branch-1" aria-label="Show only Gestão de resíduos" aria-pressed="true" class="heading-menu__root-level-button" data-heading-root-level="0" type="button">0</button><button aria-controls="heading-menu-branch-1" aria-label="Show Gestão de resíduos through depth 1" aria-pressed="false" class="heading-menu__root-level-button" data-heading-root-level="1" type="button">1</button><button aria-controls="heading-menu-branch-1" aria-label="Show Gestão de resíduos through depth 2" aria-pressed="false" class="heading-menu__root-level-button" data-heading-root-level="2" type="button">2</button></div></div><ul hidden="" id="heading-menu-branch-1"><li class="heading-menu__item"><div class="heading-menu__row"><button aria-controls="heading-menu-branch-2" aria-expanded="false" aria-label="Expand O que fazer com …" class="heading-menu__branch-toggle" data-heading-branch-toggle="" data-heading-depth="1" type="button">▾</button><a class="heading-menu__link" data-heading-label-toggle="" href="#o-que-fazer-com">O que fazer com …</a></div><ul hidden="" id="heading-menu-branch-2"><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#comida-para-galinhaspatos">… comida para galinhas/patos 🐔🦆</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#ossos">… ossos 🦴🦴</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#residuos-compostaveis-que-os-animais-nao-comem">… resíduos compostáveis que os animais não comem</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#papel-higienico">… papel higiênico</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#plastico-papelao-isopor-lixo-para-ser-queimado">… plástico, papelão, isopor (lixo para ser queimado 🔥)</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#metal">… metal</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#vidro">… vidro</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#pilhas-baterias-lixo-eletronico-lixo-quimico">… pilhas, baterias, lixo eletrônico, lixo químico 🔋️📺🎨🧪</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#oleo-de-cozinha-usado">… óleo de cozinha usado</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#outros-residuos-que-nao-se-enquadram-em-nenhuma-das-categorias-acima">… outros resíduos que não se enquadram em nenhuma das categorias acima</a></div></li></ul></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#recapitulando">Recapitulando …</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#algumas-ilustracoes">Algumas ilustrações</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><button aria-controls="heading-menu-branch-3" aria-expanded="false" aria-label="Expand Discussão" class="heading-menu__branch-toggle" data-heading-branch-toggle="" data-heading-depth="1" type="button">▾</button><a class="heading-menu__link" data-heading-label-toggle="" href="#discussao">Discussão</a></div><ul hidden="" id="heading-menu-branch-3"><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#mas-queimar-plastico-e-bom">Mas queimar plástico é bom?</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#mas-depositar-lixo-no-lixao-entao-e-bom">Mas depositar lixo no lixão então é bom?</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#como-queimar-residuos">Como queimar resíduos</a></div></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#conclusao">Conclusão</a></div></li></ul></li><li class="heading-menu__item"><div class="heading-menu__row"><span aria-hidden="true" class="heading-menu__branch-spacer"></span><a class="heading-menu__link" href="#referencias">Referências</a></div></li></ul></li></ul></nav></aside><a aria-controls="article-heading-menu" aria-expanded="false" aria-keyshortcuts="c" aria-label="Expand contents" class="heading-menu__open no-print" data-heading-menu-open="" href="#article-heading-menu">☰</a>
+<script>
+(function () {
+  const body = document.body;
+  const menu = document.querySelector('[data-heading-menu]');
+  const openButton = document.querySelector('[data-heading-menu-open]');
+  const closeButton = document.querySelector('[data-heading-menu-close]');
+  if (!menu || !openButton || !closeButton) return;
+
+  function selectAll(selector, root) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(selector));
+  }
+
+  const smallScreen = window.matchMedia('(max-width: 840px)');
+  const branchButtons = selectAll('[data-heading-branch-toggle]', menu);
+  const levelButtons = selectAll('[data-heading-menu-level]', menu);
+  const rootLevelButtons = selectAll('[data-heading-root-level]', menu);
+  const rootLevelGroups = selectAll('[data-heading-root-maximum]', menu);
+  const labelToggles = selectAll('[data-heading-label-toggle]', menu);
+
+  function setMenuExpanded(expanded, moveFocus) {
+    body.classList.toggle('heading-menu-collapsed', !expanded);
+    menu.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+    openButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    closeButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if (moveFocus) {
+      window.requestAnimationFrame(function () {
+        (expanded ? closeButton : openButton).focus();
+      });
+    }
+  }
+
+  openButton.addEventListener('click', function (event) {
+    event.preventDefault();
+    setMenuExpanded(true, true);
+  });
+  closeButton.addEventListener('click', function (event) {
+    event.preventDefault();
+    setMenuExpanded(false, true);
+  });
+
+  selectAll('.heading-menu__link', menu).forEach(function (link) {
+    link.addEventListener('click', function () {
+      if (smallScreen.matches) setMenuExpanded(false, false);
+    });
+  });
+
+  function setBranchExpanded(button, expanded) {
+    const childList = document.getElementById(button.getAttribute('aria-controls'));
+    if (!childList) return;
+    button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    button.setAttribute('aria-label', (expanded ? 'Collapse ' : 'Expand ') +
+      button.parentElement.querySelector('.heading-menu__link, .heading-menu__label').textContent.trim());
+    childList.hidden = !expanded;
+  }
+
+  function rootItemFor(element) {
+    let item = element.closest('.heading-menu__item');
+    while (item && item.parentElement &&
+      !item.parentElement.classList.contains('heading-menu__tree')) {
+      item = item.parentElement.closest('.heading-menu__item');
+    }
+    return item;
+  }
+
+  function clearGlobalLevelSelection() {
+    levelButtons.forEach(function (button) {
+      button.setAttribute('aria-pressed', 'false');
+    });
+  }
+
+  function setRootLevelSelection(rootItem, level) {
+    selectAll('[data-heading-root-level]', rootItem).forEach(function (button) {
+      button.setAttribute('aria-pressed',
+        Number(button.dataset.headingRootLevel) === level ? 'true' : 'false');
+    });
+  }
+
+  function clearRootLevelSelection(rootItem) {
+    selectAll('[data-heading-root-level]', rootItem).forEach(function (button) {
+      button.setAttribute('aria-pressed', 'false');
+    });
+  }
+
+  function toggleBranch(button) {
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    setBranchExpanded(button, !expanded);
+    clearGlobalLevelSelection();
+    const rootItem = rootItemFor(button);
+    if (rootItem) clearRootLevelSelection(rootItem);
+  }
+
+  function setExpansionLevel(level) {
+    branchButtons.forEach(function (button) {
+      const branchDepth = Number(button.dataset.headingDepth);
+      setBranchExpanded(button, branchDepth < level);
+    });
+    levelButtons.forEach(function (button) {
+      button.setAttribute('aria-pressed', Number(button.dataset.headingMenuLevel) === level ? 'true' : 'false');
+    });
+    rootLevelGroups.forEach(function (group) {
+      const rootItem = rootItemFor(group);
+      const rootMaximum = Number(group.dataset.headingRootMaximum);
+      if (rootItem) setRootLevelSelection(rootItem, Math.min(level, rootMaximum));
+    });
+  }
+
+  branchButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      toggleBranch(button);
+    });
+  });
+
+  labelToggles.forEach(function (label) {
+    label.addEventListener('click', function () {
+      const branchButton = label.parentElement.querySelector('[data-heading-branch-toggle]');
+      if (branchButton) toggleBranch(branchButton);
+    });
+  });
+
+  rootLevelButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      const level = Number(button.dataset.headingRootLevel);
+      const rootItem = rootItemFor(button);
+      if (!rootItem) return;
+      selectAll('[data-heading-branch-toggle]', rootItem).forEach(function (branchButton) {
+        const branchDepth = Number(branchButton.dataset.headingDepth);
+        setBranchExpanded(branchButton, branchDepth < level);
+      });
+      clearGlobalLevelSelection();
+      setRootLevelSelection(rootItem, level);
+    });
+  });
+
+  levelButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      setExpansionLevel(Number(button.dataset.headingMenuLevel));
+    });
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.defaultPrevented || event.repeat || window.readerDialogs?.active) return;
+    const target = event.target;
+    const isEditable = target && (target.isContentEditable ||
+      /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+    if (event.key.toLowerCase() === 'c' && !event.altKey && !event.ctrlKey &&
+        !event.metaKey && !event.shiftKey && !isEditable &&
+        body.classList.contains('heading-menu-collapsed')) {
+      setMenuExpanded(true, true);
+    } else if (event.key === 'Escape') {
+      setMenuExpanded(body.classList.contains('heading-menu-collapsed'), true);
+    }
+  });
+
+  setExpansionLevel(0);
+  setMenuExpanded(!smallScreen.matches, false);
+  body.classList.add('heading-menu-ready');
+})();
+</script>
 <div class="reader-controls no-print" role="group" aria-label="Reading options"><button class="theme-option no-print" type="button"
   data-reader-option="theme:dark" data-reader-group="theme"
   data-reader-value="dark" aria-label="Switch to dark mode" title="Switch to dark mode"
@@ -1820,10 +1997,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
   data-reader-option="image-layout:figures" data-reader-group="image-layout"
   data-reader-value="figures" aria-label="Use images at 100% width" title="Use images at 100% width"
   aria-pressed="false"><span aria-hidden="true">100%</span></button></div>
+<script>window.readerPreferences.bindControls();</script>
 <main>
   <nav aria-label="Table of contents" class="print-toc"><p class="print-toc__title">Contents</p><ul class="print-toc__tree"><li class="print-toc__item"><a class="print-toc__link" href="#gestao-de-residuos">Gestão de resíduos</a><ul><li class="print-toc__item"><a class="print-toc__link" href="#o-que-fazer-com">O que fazer com …</a><ul><li class="print-toc__item"><a class="print-toc__link" href="#comida-para-galinhaspatos">… comida para galinhas/patos 🐔🦆</a></li><li class="print-toc__item"><a class="print-toc__link" href="#ossos">… ossos 🦴🦴</a></li><li class="print-toc__item"><a class="print-toc__link" href="#residuos-compostaveis-que-os-animais-nao-comem">… resíduos compostáveis que os animais não comem</a></li><li class="print-toc__item"><a class="print-toc__link" href="#papel-higienico">… papel higiênico</a></li><li class="print-toc__item"><a class="print-toc__link" href="#plastico-papelao-isopor-lixo-para-ser-queimado">… plástico, papelão, isopor (lixo para ser queimado 🔥)</a></li><li class="print-toc__item"><a class="print-toc__link" href="#metal">… metal</a></li><li class="print-toc__item"><a class="print-toc__link" href="#vidro">… vidro</a></li><li class="print-toc__item"><a class="print-toc__link" href="#pilhas-baterias-lixo-eletronico-lixo-quimico">… pilhas, baterias, lixo eletrônico, lixo químico 🔋️📺🎨🧪</a></li><li class="print-toc__item"><a class="print-toc__link" href="#oleo-de-cozinha-usado">… óleo de cozinha usado</a></li><li class="print-toc__item"><a class="print-toc__link" href="#outros-residuos-que-nao-se-enquadram-em-nenhuma-das-categorias-acima">… outros resíduos que não se enquadram em nenhuma das categorias acima</a></li></ul></li><li class="print-toc__item"><a class="print-toc__link" href="#recapitulando">Recapitulando …</a></li><li class="print-toc__item"><a class="print-toc__link" href="#algumas-ilustracoes">Algumas ilustrações</a></li><li class="print-toc__item"><a class="print-toc__link" href="#discussao">Discussão</a><ul><li class="print-toc__item"><a class="print-toc__link" href="#mas-queimar-plastico-e-bom">Mas queimar plástico é bom?</a></li><li class="print-toc__item"><a class="print-toc__link" href="#mas-depositar-lixo-no-lixao-entao-e-bom">Mas depositar lixo no lixão então é bom?</a></li><li class="print-toc__item"><a class="print-toc__link" href="#como-queimar-residuos">Como queimar resíduos</a></li><li class="print-toc__item"><a class="print-toc__link" href="#conclusao">Conclusão</a></li></ul></li><li class="print-toc__item"><a class="print-toc__link" href="#referencias">Referências</a></li></ul></li></ul></nav>
   <article class="markdown-body">
-  <p class="convnote">Converted from gestao_de_residuos.md in 2026-11-06 09:09:28</p><section class="word-cloud" data-word-cloud="frequency" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="word-cloud-details" aria-label="Word cloud"><div class="word-cloud__words"><span class="word-cloud__word" data-count="20" style="font-size:2.400rem">não</span>
+  <p class="convnote">Converted from gestao_de_residuos.md in 2026-11-07 08:06:26</p><section class="word-cloud" data-word-cloud="frequency" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="word-cloud-details" aria-label="Word cloud"><div class="word-cloud__words"><span class="word-cloud__word" data-count="20" style="font-size:2.400rem">não</span>
 <span class="word-cloud__word" data-count="16" style="font-size:2.161rem">lixo</span>
 <span class="word-cloud__word" data-count="15" style="font-size:2.096rem">resíduos</span>
 <span class="word-cloud__word" data-count="11" style="font-size:1.814rem">queima</span>
@@ -2335,162 +2513,4 @@ window.readerDialogs = (() => {
 })();
 </script>
 
-<script>
-(function () {
-  const body = document.body;
-  const menu = document.querySelector('[data-heading-menu]');
-  const openButton = document.querySelector('[data-heading-menu-open]');
-  const closeButton = document.querySelector('[data-heading-menu-close]');
-  if (!menu || !openButton || !closeButton) return;
-
-  function selectAll(selector, root) {
-    return Array.prototype.slice.call((root || document).querySelectorAll(selector));
-  }
-
-  const smallScreen = window.matchMedia('(max-width: 840px)');
-  const branchButtons = selectAll('[data-heading-branch-toggle]', menu);
-  const levelButtons = selectAll('[data-heading-menu-level]', menu);
-  const rootLevelButtons = selectAll('[data-heading-root-level]', menu);
-  const rootLevelGroups = selectAll('[data-heading-root-maximum]', menu);
-  const labelToggles = selectAll('[data-heading-label-toggle]', menu);
-
-  function setMenuExpanded(expanded, moveFocus) {
-    body.classList.toggle('heading-menu-collapsed', !expanded);
-    menu.setAttribute('aria-hidden', expanded ? 'false' : 'true');
-    openButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    closeButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    if (moveFocus) {
-      window.requestAnimationFrame(function () {
-        (expanded ? closeButton : openButton).focus();
-      });
-    }
-  }
-
-  openButton.addEventListener('click', function (event) {
-    event.preventDefault();
-    setMenuExpanded(true, true);
-  });
-  closeButton.addEventListener('click', function (event) {
-    event.preventDefault();
-    setMenuExpanded(false, true);
-  });
-
-  selectAll('.heading-menu__link', menu).forEach(function (link) {
-    link.addEventListener('click', function () {
-      if (smallScreen.matches) setMenuExpanded(false, false);
-    });
-  });
-
-  function setBranchExpanded(button, expanded) {
-    const childList = document.getElementById(button.getAttribute('aria-controls'));
-    if (!childList) return;
-    button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    button.setAttribute('aria-label', (expanded ? 'Collapse ' : 'Expand ') +
-      button.parentElement.querySelector('.heading-menu__link, .heading-menu__label').textContent.trim());
-    childList.hidden = !expanded;
-  }
-
-  function rootItemFor(element) {
-    let item = element.closest('.heading-menu__item');
-    while (item && item.parentElement &&
-      !item.parentElement.classList.contains('heading-menu__tree')) {
-      item = item.parentElement.closest('.heading-menu__item');
-    }
-    return item;
-  }
-
-  function clearGlobalLevelSelection() {
-    levelButtons.forEach(function (button) {
-      button.setAttribute('aria-pressed', 'false');
-    });
-  }
-
-  function setRootLevelSelection(rootItem, level) {
-    selectAll('[data-heading-root-level]', rootItem).forEach(function (button) {
-      button.setAttribute('aria-pressed',
-        Number(button.dataset.headingRootLevel) === level ? 'true' : 'false');
-    });
-  }
-
-  function clearRootLevelSelection(rootItem) {
-    selectAll('[data-heading-root-level]', rootItem).forEach(function (button) {
-      button.setAttribute('aria-pressed', 'false');
-    });
-  }
-
-  function toggleBranch(button) {
-    const expanded = button.getAttribute('aria-expanded') === 'true';
-    setBranchExpanded(button, !expanded);
-    clearGlobalLevelSelection();
-    const rootItem = rootItemFor(button);
-    if (rootItem) clearRootLevelSelection(rootItem);
-  }
-
-  function setExpansionLevel(level) {
-    branchButtons.forEach(function (button) {
-      const branchDepth = Number(button.dataset.headingDepth);
-      setBranchExpanded(button, branchDepth < level);
-    });
-    levelButtons.forEach(function (button) {
-      button.setAttribute('aria-pressed', Number(button.dataset.headingMenuLevel) === level ? 'true' : 'false');
-    });
-    rootLevelGroups.forEach(function (group) {
-      const rootItem = rootItemFor(group);
-      const rootMaximum = Number(group.dataset.headingRootMaximum);
-      if (rootItem) setRootLevelSelection(rootItem, Math.min(level, rootMaximum));
-    });
-  }
-
-  branchButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      toggleBranch(button);
-    });
-  });
-
-  labelToggles.forEach(function (label) {
-    label.addEventListener('click', function () {
-      const branchButton = label.parentElement.querySelector('[data-heading-branch-toggle]');
-      if (branchButton) toggleBranch(branchButton);
-    });
-  });
-
-  rootLevelButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      const level = Number(button.dataset.headingRootLevel);
-      const rootItem = rootItemFor(button);
-      if (!rootItem) return;
-      selectAll('[data-heading-branch-toggle]', rootItem).forEach(function (branchButton) {
-        const branchDepth = Number(branchButton.dataset.headingDepth);
-        setBranchExpanded(branchButton, branchDepth < level);
-      });
-      clearGlobalLevelSelection();
-      setRootLevelSelection(rootItem, level);
-    });
-  });
-
-  levelButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      setExpansionLevel(Number(button.dataset.headingMenuLevel));
-    });
-  });
-
-  document.addEventListener('keydown', function (event) {
-    if (event.defaultPrevented || event.repeat || window.readerDialogs?.active) return;
-    const target = event.target;
-    const isEditable = target && (target.isContentEditable ||
-      /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
-    if (event.key.toLowerCase() === 'c' && !event.altKey && !event.ctrlKey &&
-        !event.metaKey && !event.shiftKey && !isEditable &&
-        body.classList.contains('heading-menu-collapsed')) {
-      setMenuExpanded(true, true);
-    } else if (event.key === 'Escape') {
-      setMenuExpanded(body.classList.contains('heading-menu-collapsed'), true);
-    }
-  });
-
-  setExpansionLevel(0);
-  setMenuExpanded(!smallScreen.matches, false);
-  body.classList.add('heading-menu-ready');
-})();
-</script>
 </body></html>
